@@ -21,11 +21,14 @@ const ChatGptPlugin = (props: Props) => {
   const [title, setTitle] = useState('');
   const [ingress, setIngress] = useState('');
   const [body, setBody] = useState('');
-  const [radio, setRadio] = useState('a')
+  const [radio, setRadio] = useState('');
 
-  const handleChange = useCallback((event) => {
+  /*const handleChange = useCallback((event) => {
     setRadio(event.currentTarget.value)
-  }, [])
+  }, [])*/
+  const handleChange = (event) => {
+    setRadio(event.currentTarget.value);
+  };
 
   let category = document.getElementById('input')?.innerHTML;
   let titlesSplit = Array(5);
@@ -179,9 +182,9 @@ const ChatGptPlugin = (props: Props) => {
       <Card padding={4}>
         <Flex align="center">
           <Radio id="radio1" style={{display: 'block'}} 
-          //checked={radio === 'a'}
+          checked={radio === 'a'}
           name="foo"
-          //onChange={handleChange}
+          onChange={handleChange}
           value={titles[0]}/>
           
           <Box flex={1} paddingLeft={3}>
@@ -194,9 +197,9 @@ const ChatGptPlugin = (props: Props) => {
       <Card padding={4}>
         <Flex align="center">
           <Radio id="radio2" style={{display: 'block'}} 
-          //checked={radio === 'b'}
+          checked={radio === 'b'}
           name="foo"
-          //onChange={handleChange}
+          onChange={handleChange}
           value={titles[1]}/>
           <Box flex={1} paddingLeft={3}>
             <Text>
@@ -208,9 +211,9 @@ const ChatGptPlugin = (props: Props) => {
       <Card padding={4}>
         <Flex align="center">
           <Radio id="radio3" style={{display: 'block'}} 
-          //checked={radio === 'c'}
+          checked={radio === 'c'}
           name="foo"
-          //onChange={handleChange}
+          onChange={handleChange}
           value={titles[2]}/>
           <Box flex={1} paddingLeft={3}>
             <Text>
@@ -222,9 +225,9 @@ const ChatGptPlugin = (props: Props) => {
       <Card padding={4}>
         <Flex align="center">
           <Radio id="radio4" style={{display: 'block'}} 
-          //checked={radio === 'd'}
+          checked={radio === 'd'}
           name="foo"
-          //onChange={handleChange}
+          onChange={handleChange}
           value={titles[3]}/>
           <Box flex={1} paddingLeft={3}>
             <Text>
@@ -236,9 +239,9 @@ const ChatGptPlugin = (props: Props) => {
       <Card padding={4}>
         <Flex align="center">
           <Radio id="radio5" style={{display: 'block'}} 
-          //checked={radio === 'e'}
+          checked={radio === 'e'}
           name="foo"
-          //onChange={handleChange}
+          onChange={handleChange}
           value={titles[4]}/>
           <Box flex={1} paddingLeft={3}>
             <Text>
@@ -260,7 +263,7 @@ const ChatGptPlugin = (props: Props) => {
         {loading && <h3>Loading ...</h3>}
       </Card>
       <Card padding={4}>
-      <Button onClick={handleGenerateArticle}
+      <Button onClick={handleGenerateArticle(radio)}
         fontSize={[2, 2, 3]}
         //icon={AddIcon}
         mode="ghost"
