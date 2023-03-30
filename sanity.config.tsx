@@ -5,7 +5,8 @@ import {schemaTypes} from './schemas'
 import { unsplashImageAsset } from "sanity-plugin-asset-source-unsplash";
 import {Card, Text} from '@sanity/ui'
 import {DashboardIcon} from '@sanity/icons'
-import ChatGptPlugin from './components/chatGPT'
+import ChatGptPlugin from './components/category'
+
 
 const chatGptTool = () => {
   return {
@@ -15,7 +16,6 @@ const chatGptTool = () => {
     component: ChatGptPlugin,
   }
 }
-
 
 
 export default defineConfig({
@@ -28,7 +28,7 @@ export default defineConfig({
   plugins: [
     deskTool(),
     visionTool(),
-    unsplashImageAsset()
+    unsplashImageAsset(),
   ],
 
   tools: [chatGptTool()],
