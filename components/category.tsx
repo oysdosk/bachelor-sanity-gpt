@@ -19,6 +19,10 @@ const ChatGptPlugin = (props: Props) => {
   const [loadingTitle, setLoadingTitle] = useState(false);
   const [loadingArticle, setLoadingArticle] = useState(false);
   const [savingArticle, setSavingArticle] = useState(false);
+  const [showTopic, setShowTopic] = useState(true);
+  const [showTitles, setShowTitles] = useState(false);
+  const [showArticle, setShowArticle] = useState(false);
+  const [responseTitles, setResponseTitles] = useState(false);
   const [prompt, setPrompt] = useState('');
   const [title, setTitle] = useState('');
   const [ingress, setIngress] = useState('');
@@ -31,8 +35,16 @@ const ChatGptPlugin = (props: Props) => {
   const handleChange = (event) => {
     setRadio(event.currentTarget.value);
   };
+  const handleShowTitles = () => {
+    setShowTopic(!showTopic);
+    setShowTitles(!showTitles);
+  }
+  const handleShowArticle = () => {
+    setShowTitles(!showTitles);
+    setShowArticle(!showArticle);
+  }
 
-  let category = document.getElementById('input')?.innerHTML;
+  //let category = document.getElementById('input')?.innerHTML;
   let titlesSplit = Array(5);
   
   const [titles, setTitles] = useState(['', '', '','','']);
@@ -76,56 +88,67 @@ const ChatGptPlugin = (props: Props) => {
 
       setTitles(newTitles);
       setLoadingTitle(false);
+      //setResponseTitles(true);
       console.log(titles);
-
+      //handleShowTitles();
+      
       // Set loading state back to false and close the plugin
       //props.onClose();
     }
+    return true;
+  }
+
+  const titlesList = async () => {
+    handleGenerateTitles().then(handleShowTitles);
+    /*while (!responseTitles) {
+      console.log('waiting')
+    }
+    handleShowTitles();*/
   }
 
 
   const handleGenerateArticle = async (title: string) => {
     setLoadingArticle(true);
 
-    //let title = 
     const articlePrompt = `Write an ingress and a body for the following article titled ${title}.
       Prefix each section with a $ mark.`
     
-      const articleResponse = `$Title: ... $Ingress: ... $Body: ...`
+    const articleResponse = `$Title: ... $Ingress: ... $Body: ...`
 
-      // API prompt for titles
-      openai.createChatCompletion({
-        messages: [
-        {role: 'user', content: articlePrompt},
-        {role: 'assistant', content: articleResponse}
-        ],
-        model: 'gpt-3.5-turbo-0301',
-        temperature: 0.8,
-        max_tokens: 2048,
-      })
-      .then(response => {
-        console.log(response)
-        const res = response.data.choices[0].message?.content;
-        getArticles(res);
-      })
-      .catch(error => console.error(error));
+    // API prompt for titles
+    openai.createChatCompletion({
+      messages: [
+      {role: 'user', content: articlePrompt},
+      {role: 'assistant', content: articleResponse}
+      ],
+      model: 'gpt-3.5-turbo-0301',
+      temperature: 0.8,
+      max_tokens: 2048,
+    })
+    .then(response => {
+      console.log(response)
+      const res = response.data.choices[0].message?.content;
+      getArticles(res);
+    })
+    .catch(error => console.error(error));
 
     const getArticles = async (msg) => {
       const removeLines = msg.replace("\n","");
       const articles = removeLines.split("$");
-      const ingresses = [];
+      /*const ingresses = [];
       const bodies = [];
       for (let i = 1; i < articles.length; i++){
         if ((i-2)%3 == 0) { ingresses.push(articles[i]); console.log(articles[i]) }
         if (i%3 == 0) { bodies.push(articles[i]); console.log(articles[i])}
-      }
+      }*/
       
       console.log(articles);
 
       setTitle(title);
-      setIngress(ingresses[0]);
-      setBody(bodies[0]);
+      setIngress(articles[2]);
+      setBody(articles[3]);
       setLoadingArticle(false);
+      handleShowArticle();
     }
   }
 
@@ -167,7 +190,7 @@ const ChatGptPlugin = (props: Props) => {
 
   return (
   <Box>
-    <Box>
+    <Box style={{ display : showTopic ? "block" : "none" }}>
       <Card padding={4}>
         <Text size={4}>ChatGPT Article Generator</Text>
       </Card>
@@ -182,25 +205,27 @@ const ChatGptPlugin = (props: Props) => {
           placeholder="Give me a topic ..."
           value={prompt}
         />
-        <Button onClick={handleGenerateTitles}
-        fontSize={[2, 2, 3]}
-        //icon={AddIcon}
-        mode="ghost"
-        padding={[3, 3, 4]}
-        radius={3}
-        text="Create titles"
-      />
       </Card>
-      <Card padding={2}>
+      <Card padding={4}>
+        <Button onClick={titlesList}
+          fontSize={[2, 2, 3]}
+          //icon={AddIcon}
+          mode="ghost"
+          padding={[3, 3, 4]}
+          radius={3}
+          text="Create titles"
+          />
+      </Card>
+      <Card padding={4}>
         {loadingTitle && <h3>Loading titles...</h3>}
       </Card>
     </Box>
-    <Box>
+    <Box style={{ display : showTitles ? "block" : "none" }}>
       <Card padding={4}>
         <Flex align="center">
           <Radio id="radio1" style={{display: 'block'}} 
           checked={radio === titles[0]}
-          name="foo"
+          name="titles"
           onChange={handleChange}
           value={titles[0]}/>
           
@@ -215,7 +240,7 @@ const ChatGptPlugin = (props: Props) => {
         <Flex align="center">
           <Radio id="radio2" style={{display: 'block'}} 
           checked={radio === titles[1]}
-          name="foo"
+          name="titles"
           onChange={handleChange}
           value={titles[1]}/>
           <Box flex={1} paddingLeft={3}>
@@ -229,7 +254,7 @@ const ChatGptPlugin = (props: Props) => {
         <Flex align="center">
           <Radio id="radio3" style={{display: 'block'}} 
           checked={radio === titles[2]}
-          name="foo"
+          name="titles"
           onChange={handleChange}
           value={titles[2]}/>
           <Box flex={1} paddingLeft={3}>
@@ -243,7 +268,7 @@ const ChatGptPlugin = (props: Props) => {
         <Flex align="center">
           <Radio id="radio4" style={{display: 'block'}} 
           checked={radio === titles[3]}
-          name="foo"
+          name="titles"
           onChange={handleChange}
           value={titles[3]}/>
           <Box flex={1} paddingLeft={3}>
@@ -257,7 +282,7 @@ const ChatGptPlugin = (props: Props) => {
         <Flex align="center">
           <Radio id="radio5" style={{display: 'block'}} 
           checked={radio === titles[4]}
-          name="foo"
+          name="titles"
           onChange={handleChange}
           value={titles[4]}/>
           <Box flex={1} paddingLeft={3}>
@@ -267,7 +292,7 @@ const ChatGptPlugin = (props: Props) => {
           </Box>
         </Flex>
       </Card>
-      <Card padding={3}>
+      <Card padding={4}>
         <Button onClick={handleGenerateTitles}
           fontSize={[2, 2, 3]}
           //icon={AddIcon}
@@ -277,7 +302,7 @@ const ChatGptPlugin = (props: Props) => {
           text="Try again"
         />
       </Card>
-      <Card padding={3}>
+      <Card padding={4}>
         <Button onClick={(e:any) => handleGenerateArticle(radio)}
           fontSize={[2, 2, 3]}
           //icon={AddIcon}
@@ -287,15 +312,15 @@ const ChatGptPlugin = (props: Props) => {
           text="Generate article"
         />
       </Card>
-      <Card padding={2}>
+      <Card padding={4}>
         {loadingArticle && <h3>Loading article...</h3>}
       </Card>
-  </Box>
-  <Stack padding={4} space={[5,5,5,5]}>
-  <Card>
+    </Box>
+    <Stack padding={4} space={[5,5,5,5]} style={{ display : showArticle ? "block" : "none" }}>
+      <Card>
         <Label size={4}>Title</Label>
       </Card>
-    <Card>
+      <Card>
         <TextArea id="title"
           fontSize={[2, 2, 3, 3]}
           onChange={(event) =>
@@ -347,9 +372,12 @@ const ChatGptPlugin = (props: Props) => {
           text="Save article"
         />
       </Card>
+      <Card padding={4}>
+        {savingArticle && <h3>Saving article...</h3>}
+      </Card>
     </Stack>
   </Box>
-  );
+);
 }
 
 export default ChatGptPlugin;
