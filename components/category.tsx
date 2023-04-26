@@ -20,31 +20,16 @@ const ChatGptPlugin = (props: Props) => {
   const [loadingArticle, setLoadingArticle] = useState(false);
   const [savingArticle, setSavingArticle] = useState(false);
   const [showTopic, setShowTopic] = useState(1);
-  const [showTitles, setShowTitles] = useState(2);
-  const [showArticle, setShowArticle] = useState(3);
-  const [responseTitles, setResponseTitles] = useState(false);
   const [prompt, setPrompt] = useState('');
   const [title, setTitle] = useState('');
   const [ingress, setIngress] = useState('');
   const [body, setBody] = useState('');
   const [radio, setRadio] = useState('');
 
-  /*const handleChange = useCallback((event) => {
-    setRadio(event.currentTarget.value)
-  }, [])*/
   const handleChange = (event) => {
     setRadio(event.currentTarget.value);
   };
-  const handleShowTitles = () => {
-    setShowTopic(!showTopic);
-    setShowTitles(!showTitles);
-  }
-  const handleShowArticle = () => {
-    setShowTitles(!showTitles);
-    setShowArticle(!showArticle);
-  }
 
-  //let category = document.getElementById('input')?.innerHTML;
   let titlesSplit = Array(5);
   
   const [titles, setTitles] = useState(['', '', '','','']);
@@ -52,7 +37,6 @@ const ChatGptPlugin = (props: Props) => {
   const handleGenerateTitles = async () => {
     setLoadingTitle(true);
   
-    //const systemPrompt = 'Whatever questions you receive, only respond with a list of titles.'
     const titlePrompt = `Suggest five titles for an article about ${prompt}. Separate each title only by a comma and space, and wrap them in single quotes.`
     const titleAssistant =  `Example: 'Title1', 'Title2', 'Title3', 'Title4', 'Title5'`;
     
@@ -60,8 +44,7 @@ const ChatGptPlugin = (props: Props) => {
     openai.createChatCompletion({
       messages: [
        {role: 'user', content: titlePrompt},
-       {role: 'assistant', content: titleAssistant },
-       //{role: 'system', content:systemPrompt}
+       {role: 'assistant', content: titleAssistant }
       ],
       model: 'gpt-3.5-turbo-0301',
       temperature: 0.8,
@@ -89,22 +72,9 @@ const ChatGptPlugin = (props: Props) => {
       setTitles(newTitles);
       setLoadingTitle(false);
       setShowTopic(2);
-      //setResponseTitles(true);
       console.log(titles);
-      //handleShowTitles();
-      
-      // Set loading state back to false and close the plugin
-      //props.onClose();
     }
     return true;
-  }
-
-  const titlesList = async () => {
-    handleGenerateTitles().then(handleShowTitles);
-    /*while (!responseTitles) {
-      console.log('waiting')
-    }
-    handleShowTitles();*/
   }
 
 
@@ -136,21 +106,12 @@ const ChatGptPlugin = (props: Props) => {
     const getArticles = async (msg) => {
       const removeLines = msg.replace("\n","");
       const articles = removeLines.split("$");
-      /*const ingresses = [];
-      const bodies = [];
-      for (let i = 1; i < articles.length; i++){
-        if ((i-2)%3 == 0) { ingresses.push(articles[i]); console.log(articles[i]) }
-        if (i%3 == 0) { bodies.push(articles[i]); console.log(articles[i])}
-      }*/
-      
       console.log(articles);
-
       setTitle(title);
       setIngress(articles[2]);
       setBody(articles[3]);
       setLoadingArticle(false);
       setShowTopic(3);
-      //handleShowArticle();
     }
   }
 
@@ -211,7 +172,6 @@ const ChatGptPlugin = (props: Props) => {
       <Card padding={4}>
         <Button onClick={handleGenerateTitles}
           fontSize={[2, 2, 3]}
-          //icon={AddIcon}
           mode="ghost"
           padding={[3, 3, 4]}
           radius={3}
@@ -297,7 +257,6 @@ const ChatGptPlugin = (props: Props) => {
       <Card padding={4}>
         <Button onClick={handleGenerateTitles}
           fontSize={[2, 2, 3]}
-          //icon={AddIcon}
           mode="ghost"
           padding={[3, 3, 4]}
           radius={3}
@@ -307,7 +266,6 @@ const ChatGptPlugin = (props: Props) => {
       <Card padding={4}>
         <Button onClick={(e:any) => handleGenerateArticle(radio)}
           fontSize={[2, 2, 3]}
-          //icon={AddIcon}
           mode="ghost"
           padding={[3, 3, 4]}
           radius={3}
@@ -368,7 +326,6 @@ const ChatGptPlugin = (props: Props) => {
       <Card padding={4}>
       <Button onClick={(e:any) => handleGenerateArticle(radio)}
           fontSize={[2, 2, 3]}
-          //icon={AddIcon}
           mode="ghost"
           padding={[3, 3, 4]}
           radius={3}
@@ -378,7 +335,6 @@ const ChatGptPlugin = (props: Props) => {
       <Card padding={4}>
         <Button onClick={(e:any) => handleSaveArticle()}
           fontSize={[2, 2, 3]}
-          //icon={AddIcon}
           mode="ghost"
           padding={[3, 3, 4]}
           radius={3}
