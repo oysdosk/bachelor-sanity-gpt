@@ -19,9 +19,9 @@ const ChatGptPlugin = (props: Props) => {
   const [loadingTitle, setLoadingTitle] = useState(false);
   const [loadingArticle, setLoadingArticle] = useState(false);
   const [savingArticle, setSavingArticle] = useState(false);
-  const [showTopic, setShowTopic] = useState(true);
-  const [showTitles, setShowTitles] = useState(false);
-  const [showArticle, setShowArticle] = useState(false);
+  const [showTopic, setShowTopic] = useState(1);
+  const [showTitles, setShowTitles] = useState(2);
+  const [showArticle, setShowArticle] = useState(3);
   const [responseTitles, setResponseTitles] = useState(false);
   const [prompt, setPrompt] = useState('');
   const [title, setTitle] = useState('');
@@ -88,6 +88,7 @@ const ChatGptPlugin = (props: Props) => {
 
       setTitles(newTitles);
       setLoadingTitle(false);
+      setShowTopic(2);
       //setResponseTitles(true);
       console.log(titles);
       //handleShowTitles();
@@ -148,7 +149,8 @@ const ChatGptPlugin = (props: Props) => {
       setIngress(articles[2]);
       setBody(articles[3]);
       setLoadingArticle(false);
-      handleShowArticle();
+      setShowTopic(3);
+      //handleShowArticle();
     }
   }
 
@@ -190,7 +192,7 @@ const ChatGptPlugin = (props: Props) => {
 
   return (
   <Box>
-    <Box style={{ display : showTopic ? "block" : "none" }}>
+    <Box style={{ display : showTopic==1 ? "block" : "none" }}>
       <Card padding={4}>
         <Text size={4}>ChatGPT Article Generator</Text>
       </Card>
@@ -207,7 +209,7 @@ const ChatGptPlugin = (props: Props) => {
         />
       </Card>
       <Card padding={4}>
-        <Button onClick={titlesList}
+        <Button onClick={handleGenerateTitles}
           fontSize={[2, 2, 3]}
           //icon={AddIcon}
           mode="ghost"
@@ -220,7 +222,7 @@ const ChatGptPlugin = (props: Props) => {
         {loadingTitle && <h3>Loading titles...</h3>}
       </Card>
     </Box>
-    <Box style={{ display : showTitles ? "block" : "none" }}>
+    <Box style={{ display : showTopic==2 ? "block" : "none" }}>
       <Card padding={4}>
         <Flex align="center">
           <Radio id="radio1" style={{display: 'block'}} 
@@ -313,14 +315,15 @@ const ChatGptPlugin = (props: Props) => {
         />
       </Card>
       <Card padding={4}>
+        {loadingTitle && <h3>Loading titles...</h3>}
         {loadingArticle && <h3>Loading article...</h3>}
       </Card>
     </Box>
-    <Stack padding={4} space={[5,5,5,5]} style={{ display : showArticle ? "block" : "none" }}>
+    <Stack padding={4} space={[5,5,5,5]} style={{ display : showTopic==3 ? "block" : "none" }}>
       <Card padding={4}>
         <Label size={4}>Title</Label>
       </Card>
-      <Card>
+      <Card paddingBottom={4} paddingLeft={4}>
         <TextArea id="title"
           fontSize={[2, 2, 3, 3]}
           onChange={(event) =>
@@ -332,10 +335,10 @@ const ChatGptPlugin = (props: Props) => {
           value={title}
         />
       </Card>
-      <Card padding={4}>
+      <Card paddingBottom={4} paddingLeft={4}>
         <Label size={4}>Ingress</Label>
       </Card>
-      <Card>
+      <Card paddingBottom={4} paddingLeft={4}>
         <TextArea id="ingress"
           fontSize={[2, 2, 3, 3]}
           onChange={(event) =>
@@ -347,10 +350,10 @@ const ChatGptPlugin = (props: Props) => {
           value={ingress}
         />
       </Card>
-      <Card padding={4}>
+      <Card paddingBottom={4} paddingLeft={4}>
         <Label size={4}>Body</Label>
       </Card>
-      <Card>
+      <Card paddingBottom={4} paddingLeft={4}>
         <TextArea id="body"
           fontSize={[2, 2, 3, 3]}
           onChange={(event) =>
@@ -363,6 +366,16 @@ const ChatGptPlugin = (props: Props) => {
         />
       </Card>
       <Card padding={4}>
+      <Button onClick={(e:any) => handleGenerateArticle(radio)}
+          fontSize={[2, 2, 3]}
+          //icon={AddIcon}
+          mode="ghost"
+          padding={[3, 3, 4]}
+          radius={3}
+          text="Try again"
+        />
+      </Card>
+      <Card padding={4}>
         <Button onClick={(e:any) => handleSaveArticle()}
           fontSize={[2, 2, 3]}
           //icon={AddIcon}
@@ -372,8 +385,9 @@ const ChatGptPlugin = (props: Props) => {
           text="Save article"
         />
       </Card>
-      <Card padding={4}>
+      <Card paddingBottom={4} paddingLeft={4}>
         {savingArticle && <h3>Saving article...</h3>}
+        {loadingArticle && <h3>Loading article...</h3>}
       </Card>
     </Stack>
   </Box>
