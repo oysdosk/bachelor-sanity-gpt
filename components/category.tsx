@@ -59,6 +59,7 @@ const ChatGptPlugin = (props: Props) => {
     // API prompt for titles
     openai.createChatCompletion({
       messages: [
+       {role: 'system', content: 'You are a news editor looking for captivating titles for your articles. Your purpose here is to only answer with titles wrapped in single quotes.'},
        {role: 'user', content: titlePrompt},
        {role: 'assistant', content: titleAssistant },
        //{role: 'system', content:systemPrompt}
@@ -78,7 +79,7 @@ const ChatGptPlugin = (props: Props) => {
       const removeLines = msg.replace("\n\n","");
       titlesSplit = removeLines.split(", ");
       for (let i = 0; i < titlesSplit.length; i++){
-        console.log(titlesSplit[i]);
+        //console.log(titlesSplit[i]);
       }
       const newTitles = titles.map((t,  i) => {
         t = titlesSplit[i];
@@ -111,15 +112,16 @@ const ChatGptPlugin = (props: Props) => {
     setLoadingArticle(true);
 
     const articlePrompt = `Write an ingress and a body for the following article titled ${title}.
-      Prefix each section with a $ mark.`
+      Prefix each section (Title, Ingress and Body) with a triple $ mark.`
     
-    const articleResponse = `$Title: ... $Ingress: ... $Body: ...`
+    const articleResponse = `$$$Title: '...'\n $$$Ingress: ...\n $$$Body: ...`
 
     // API prompt for titles
     openai.createChatCompletion({
       messages: [
       {role: 'user', content: articlePrompt},
-      {role: 'assistant', content: articleResponse}
+      {role: 'assistant', content: articleResponse},
+      {role: 'system', content: 'Your job is to write an article based on the title you receive. You write in a tabloid and engaging style desperate to captivate the reader'}
       ],
       model: 'gpt-3.5-turbo-0301',
       temperature: 0.8,
@@ -128,13 +130,24 @@ const ChatGptPlugin = (props: Props) => {
     .then(response => {
       console.log(response)
       const res = response.data.choices[0].message?.content;
-      getArticles(res);
+      getArticle(res);
     })
     .catch(error => console.error(error));
 
-    const getArticles = async (msg) => {
+    const getArticle = async (msg) => {
       const removeLines = msg.replace("\n","");
-      const articles = removeLines.split("$");
+      const article = removeLines.split("$$$");
+      console.log(article);
+      const title = article[1];
+      const ingress = article[2];
+      const body = article[3];
+      const cleanTitle = title.split(`Title: '`).pop().split(`'`)[0];
+      console.log(title);
+      console.log(cleanTitle);
+      const cleanIngress = ingress.split('Ingress:').pop().split('Body')[0];
+      const cleanBody = body.split('Body:').pop();
+
+
       /*const ingresses = [];
       const bodies = [];
       for (let i = 1; i < articles.length; i++){
@@ -142,11 +155,13 @@ const ChatGptPlugin = (props: Props) => {
         if (i%3 == 0) { bodies.push(articles[i]); console.log(articles[i])}
       }*/
       
-      console.log(articles);
+      console.log(article);
 
-      setTitle(title);
-      setIngress(articles[2]);
-      setBody(articles[3]);
+      setTitle(cleanTitle);
+      //setIngress(article[2]);
+      setIngress(cleanIngress);
+      setBody(cleanBody);
+      //setBody(article[3]);
       setLoadingArticle(false);
       handleShowArticle();
     }
