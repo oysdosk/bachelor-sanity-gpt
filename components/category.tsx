@@ -317,7 +317,7 @@ const ChatGptPlugin = (props: Props) => {
       </Card>
     </Box>
     <Stack padding={4} space={[5,5,5,5]} style={{ display : showArticle ? "block" : "none" }}>
-      <Card>
+      <Card padding={4}>
         <Label size={4}>Title</Label>
       </Card>
       <Card>
@@ -332,7 +332,7 @@ const ChatGptPlugin = (props: Props) => {
           value={title}
         />
       </Card>
-      <Card>
+      <Card padding={4}>
         <Label size={4}>Ingress</Label>
       </Card>
       <Card>
@@ -347,7 +347,7 @@ const ChatGptPlugin = (props: Props) => {
           value={ingress}
         />
       </Card>
-      <Card>
+      <Card padding={4}>
         <Label size={4}>Body</Label>
       </Card>
       <Card>
@@ -356,7 +356,7 @@ const ChatGptPlugin = (props: Props) => {
           onChange={(event) =>
             setBody(event.currentTarget.value)
           }
-          rows={25}
+          rows={20}
           padding={[3, 3, 4,]}
           radius={3}
           value={body}

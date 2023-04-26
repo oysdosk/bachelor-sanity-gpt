@@ -3,7 +3,6 @@ import {deskTool} from 'sanity/desk'
 import {visionTool} from '@sanity/vision'
 import {schemaTypes} from './schemas'
 import { unsplashImageAsset } from "sanity-plugin-asset-source-unsplash";
-import {Card, Text} from '@sanity/ui'
 import {DashboardIcon} from '@sanity/icons'
 import ChatGptPlugin from './components/category'
 
