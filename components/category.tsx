@@ -117,38 +117,66 @@ const ChatGptPlugin = (props: Props) => {
 
   const handleSaveArticle = async () => {
     setSavingArticle(true);  
+     fetch(`https://api.unsplash.com/photos/random?query=${title}`, {
+      headers: {
+        'Authorization': 'Client-ID TF4fmJTGOS4ZnMqNBz2qTc-LyPPddE_9BKcFNmCv-CI'
+      }
+    })
+    .then(response => response.json())
+    .then(data => {
+      const mutations = [{
+        create: {
+          _id: 'drafts.',
+          _type: 'article',
+          title: title,
+          ingress: ingress,
+          body: body,
+          image: data
+        }
+      }]
+    
+      fetch(`https://9mm9d4oe.api.sanity.io/v2021-06-07/data/mutate/production`, {
+        method: 'post',
+        headers: {
+          'Content-type': 'application/json',
+          Authorization: `Bearer skJ78olbMh27rRg2cxOeeG1iyTPzukQiLhbcb99svE685auLmN1MgYb76uJUQFd3lQx99jKssgNoROjh8Gr1AGr7tGwQnYX718zYaEn3vHnYlmINT3AGr3DqszpQ4clmJb5j8MRDSjhVeZRKidQ1vnq5xDwaHekwCtYt5eS6d6iXA2mGYtEA`
+        },
+        body: JSON.stringify({mutations})
+      })
+      .then(response => {
+        response.json();
+        setTitle('');
+        setIngress('');
+        setBody('');
+        setSavingArticle(false);
+      })
+      .then(result => console.log(result))
+      .catch(error => console.error(error))
+      /*const photoData = data as {
+        urls: {
+          regular: string;
+        };
+        alt_description: string;
+      };
       
+      setPhotoUrl(photoData.urls.regular);
+      console.log(photoUrl);
+      const img = new Image();
+      img.src = await kukk(photoUrl);
+      img.alt = photoData.alt_description;
+      console.log(img.src);
+    })
+    .catch(error => {
+      console.error('Error fetching photo:', error);
+    }*/
+    });
+    //this.unsplash = createApi({ 'TF4fmJTGOS4ZnMqNBz2qTc-LyPPddE_9BKcFNmCv-CI', fetch });
+    //const unsplash = new Unsplash('TF4fmJTGOS4ZnMqNBz2qTc-LyPPddE_9BKcFNmCv-CI');
+    //await unsplash.getPhoto('buffer', title);
+    //const img = await fetch(photoUrl)  
     //const unsplash = new Unsplash('TF4fmJTGOS4ZnMqNBz2qTc-LyPPddE_9BKcFNmCv-CI');
     //await unsplash.getPhoto('file', titles[i]);
 
-    const mutations = [{
-      create: {
-        _id: 'drafts.',
-        _type: 'article',
-        title: title,
-        ingress: ingress,
-        body: body,
-        //image: `./images/${titles[i]}.jpg`
-      }
-    }]
-  
-    fetch(`https://9mm9d4oe.api.sanity.io/v2021-06-07/data/mutate/production`, {
-      method: 'post',
-      headers: {
-        'Content-type': 'application/json',
-        Authorization: `Bearer skJ78olbMh27rRg2cxOeeG1iyTPzukQiLhbcb99svE685auLmN1MgYb76uJUQFd3lQx99jKssgNoROjh8Gr1AGr7tGwQnYX718zYaEn3vHnYlmINT3AGr3DqszpQ4clmJb5j8MRDSjhVeZRKidQ1vnq5xDwaHekwCtYt5eS6d6iXA2mGYtEA`
-      },
-      body: JSON.stringify({mutations})
-    })
-    .then(response => {
-      response.json();
-      setTitle('');
-      setIngress('');
-      setBody('');
-      setSavingArticle(false);
-    })
-    .then(result => console.log(result))
-    .catch(error => console.error(error))
   }
 
   return (
