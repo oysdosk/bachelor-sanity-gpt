@@ -1,5 +1,5 @@
 //import fetch from 'node-fetch';
-import sanityClient from '@sanity/client';
+//import sanityClient from '@sanity/client';
 import { createClient } from '@sanity/client';
 
 
@@ -41,17 +41,22 @@ async function uploadUnsplashImage(query) {
     const imageUrl = unsplashData.results[0].urls.regular;
     const imageId = unsplashData.results[0].id;
     const caption = 'Photo by ' + unsplashData.results[0].user.name;
-    console.log('Photo by ' + unsplashData.results[0].user.name);
+    console.log(caption);
     const description = unsplashData.results[0].description;
+    console.log(description);
     
 
     const imageData = await downloadImageAsBuffer(imageUrl);
 
     const asset = await client.assets.upload('image', imageData, {
       filename: `${imageId}.jpg`,
+      description: description
     });
 
-    return asset;
+    return {
+      asset: asset,
+      caption: caption
+    }
   } catch (error) {
     console.error('Error uploading Unsplash image:', error);
     throw error;

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Box, Button, Select,  Card,  TextArea, Inline, Checkbox, Flex, Text, Radio, Label, Stack } from '@sanity/ui';
 import { Configuration, OpenAIApi } from "openai";
 import uploadUnsplashImage from './unsplash/uploadUnsplashImage.mjs';
@@ -26,6 +26,7 @@ const ChatGptPlugin = (props: Props) => {
   const [ingress, setIngress] = useState('');
   const [body, setBody] = useState('');
   const [radio, setRadio] = useState('');
+  const [query, setQuery] = useState('');
 
   const handleChange = (event) => {
     setRadio(event.currentTarget.value);
@@ -119,54 +120,83 @@ const ChatGptPlugin = (props: Props) => {
   const handleSaveArticle = async () => {
     
     setSavingArticle(true);  
-
-    (async () => {
-      const query = title;
-      const asset = await uploadUnsplashImage(query);
-      //console.log(asset.user.name);
-      console.log(asset.description);
-
+    const queryPrompt = `Suggest two keywords based on the following ingress: ${ingress}. Your response should only consist of those two words.`
+    const queryAssistant =  `keyword1 keyword2`;
     
-      const mutations = [{
-        create: {
-          _id: 'drafts.',
-          _type: 'article',
-          title: title,
-          ingress: ingress,
-          body: body,
-          image: {
-            _type: 'image',
-            asset: {
-              _type: 'reference',
-              _ref: asset._id,
-            },
-            caption: asset.caption,
-            description: asset.description,
+    // API prompt for Unsplash query
+    openai.createChatCompletion({
+      messages: [
+       {role: 'user', content: queryPrompt},
+       {role: 'assistant', content: queryAssistant }
+      ],
+      model: 'gpt-3.5-turbo-0301',
+      temperature: 0.8,
+      max_tokens: 2048,
+    })
+    .then(response => {
+      console.log(response);
+      const res = response.data.choices[0].message?.content;
+      console.log(res);
+      if (res != undefined) {
+        setQuery(res);
+      }
+    })
+    .catch(error => console.error(error));
+  }
+    useEffect(() => {
+
+      (async () => {
+        console.log(query);
+        const asset = (await uploadUnsplashImage(query)).asset;
+        const caption = (await uploadUnsplashImage(query)).caption;
+        console.log(caption);
+        console.log(asset.description);
+  
+      
+        const mutations = [{
+          create: {
+            _id: 'drafts.',
+            _type: 'article',
+            title: title,
+            ingress: ingress,
+            body: body,
+            image: {
+              _type: 'image',
+              asset: {
+                _type: 'reference',
+                _ref: asset._id,
+              },
+              caption: caption,
+              description: asset.description,
+            }
           }
-        }
-      }]
+        }]
+  
+  
+        fetch(`https://9mm9d4oe.api.sanity.io/v2021-06-07/data/mutate/production`, {
+          method: 'post',
+          headers: {
+            'Content-type': 'application/json',
+            Authorization: `Bearer skJ78olbMh27rRg2cxOeeG1iyTPzukQiLhbcb99svE685auLmN1MgYb76uJUQFd3lQx99jKssgNoROjh8Gr1AGr7tGwQnYX718zYaEn3vHnYlmINT3AGr3DqszpQ4clmJb5j8MRDSjhVeZRKidQ1vnq5xDwaHekwCtYt5eS6d6iXA2mGYtEA`
+          },
+          body: JSON.stringify({mutations})
+        })
+        .then(response => {
+          response.json();
+          setTitle('');
+          setIngress('');
+          setBody('');
+          setSavingArticle(false);
+        })
+        .then(result => console.log(result))
+        .catch(error => console.error(error))
+  
+        console.log('Unsplash image asset:', asset);
+      })();
+    }, [query]);
+  
+      
 
-
-      fetch(`https://9mm9d4oe.api.sanity.io/v2021-06-07/data/mutate/production`, {
-        method: 'post',
-        headers: {
-          'Content-type': 'application/json',
-          Authorization: `Bearer skJ78olbMh27rRg2cxOeeG1iyTPzukQiLhbcb99svE685auLmN1MgYb76uJUQFd3lQx99jKssgNoROjh8Gr1AGr7tGwQnYX718zYaEn3vHnYlmINT3AGr3DqszpQ4clmJb5j8MRDSjhVeZRKidQ1vnq5xDwaHekwCtYt5eS6d6iXA2mGYtEA`
-        },
-        body: JSON.stringify({mutations})
-      })
-      .then(response => {
-        response.json();
-        setTitle('');
-        setIngress('');
-        setBody('');
-        setSavingArticle(false);
-      })
-      .then(result => console.log(result))
-      .catch(error => console.error(error))
-
-      console.log('Unsplash image asset:', asset);
-    })();
 
     
 
@@ -208,7 +238,7 @@ const ChatGptPlugin = (props: Props) => {
       })
       .then(result => console.log(result))
       .catch(error => console.error(error))*/
-    }
+  
       /*const photoData = data as {
         urls: {
           regular: string;
