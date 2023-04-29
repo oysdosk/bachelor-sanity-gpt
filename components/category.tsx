@@ -2,8 +2,6 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Box, Button, Select,  Card,  TextArea, Inline, Checkbox, Flex, Text, Radio, Label, Stack } from '@sanity/ui';
 import { Configuration, OpenAIApi } from "openai";
 import uploadUnsplashImage from './unsplash/uploadUnsplashImage.mjs';
-import { resolveConfig } from 'sanity';
-//import { Unsplash } from "./unsplash/unsplash.js";
 
 interface Props {
   onClose: () => void;
@@ -17,7 +15,7 @@ const ChatGptPlugin = (props: Props) => {
   });
   const openai = new OpenAIApi(configuration);
 
-  // State to hold the selected category
+  // React hooks to hold values
   const [loadingTitle, setLoadingTitle] = useState(false);
   const [loadingArticle, setLoadingArticle] = useState(false);
   const [savingArticle, setSavingArticle] = useState(false);
@@ -160,15 +158,13 @@ const ChatGptPlugin = (props: Props) => {
       ],
       model: 'gpt-3.5-turbo-0301',
       temperature: 0.8,
-      max_tokens: 2048,
+      max_tokens: 128,
     })
     .then(response => {
       console.log(response);
       const res = response.data.choices[0].message?.content;
       console.log(res);
-      if (res != undefined) {
-        setQuery(res);
-      }
+      if (res != undefined) setQuery(res);
     })
     .catch(error => console.error(error));
   }
@@ -219,7 +215,13 @@ const ChatGptPlugin = (props: Props) => {
     })
     .then(result => console.log(result))
     .catch(error => console.error(error))
-  }
+
+    console.log('Unsplash image asset:', asset);
+  })();
+}, [query]);
+
+  
+
 
   return (
   <Box>
