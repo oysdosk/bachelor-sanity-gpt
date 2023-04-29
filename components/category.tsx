@@ -5,7 +5,8 @@ import uploadUnsplashImage from './unsplash/uploadUnsplashImage.mjs';
 
 const projectId = '9mm9d4oe';
 const dataset = 'production';
-const token = 'sk8ANkrJ9EthuQbUNvXDbw4tgdWZQW1TM2VVJgkqZZL5Ck78KE3jyGPQQ7NGnNxo6uhbihb9nlNcR1JNWc7Ob3ThmxelcnUesXO2rzu88NvBvMy7yLbQSclYGrBJt195jT8XqhmgJ4lRf2rwXwop6axseITxTZwELrDeyo4cpboFdMH5VJZO';
+const token = 'skJ78olbMh27rRg2cxOeeG1iyTPzukQiLhbcb99svE685auLmN1MgYb76uJUQFd3lQx99jKssgNoROjh8Gr1AGr7tGwQnYX718zYaEn3vHnYlmINT3AGr3DqszpQ4clmJb5j8MRDSjhVeZRKidQ1vnq5xDwaHekwCtYt5eS6d6iXA2mGYtEA'
+//const token = 'sk8ANkrJ9EthuQbUNvXDbw4tgdWZQW1TM2VVJgkqZZL5Ck78KE3jyGPQQ7NGnNxo6uhbihb9nlNcR1JNWc7Ob3ThmxelcnUesXO2rzu88NvBvMy7yLbQSclYGrBJt195jT8XqhmgJ4lRf2rwXwop6axseITxTZwELrDeyo4cpboFdMH5VJZO';
 const apiUrl = `https://${projectId}.api.sanity.io/v1/data/query/${dataset}`;
 interface Props {
   onClose: () => void;
@@ -210,7 +211,7 @@ const ChatGptPlugin = (props: Props) => {
     method: 'post',
     headers: {
       'Content-type': 'application/json',
-      Authorization: `Bearer skJ78olbMh27rRg2cxOeeG1iyTPzukQiLhbcb99svE685auLmN1MgYb76uJUQFd3lQx99jKssgNoROjh8Gr1AGr7tGwQnYX718zYaEn3vHnYlmINT3AGr3DqszpQ4clmJb5j8MRDSjhVeZRKidQ1vnq5xDwaHekwCtYt5eS6d6iXA2mGYtEA`
+      Authorization: `Bearer ${token}`
     },
     body: JSON.stringify({mutations})
   })
@@ -234,11 +235,11 @@ const ChatGptPlugin = (props: Props) => {
 
 if (transactionId !== null){
 // Define your query to retrieve the most recent document
-const query = '*[_type == "article"] | order(_createdAt desc) [0]';
+const idQuery = '*[_type == "article"] | order(_createdAt desc) [0]';
 setTransactionId(null);
 
 // Fetch the document
-fetch(`${apiUrl}?query=${encodeURIComponent(query)}`, {
+fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
   headers: { Authorization: `Bearer ${token}` }
 })
   .then(response => response.json())
