@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Box, Button, Select,  Card,  TextArea, Inline, Checkbox, Flex, Text, Radio, Label, Stack } from '@sanity/ui';
 import { Configuration, OpenAIApi } from "openai";
+import uploadUnsplashImage from './unsplash/uploadUnsplashImage.mjs';
 //import { Unsplash } from "./unsplash/unsplash.js";
 
 interface Props {
@@ -116,14 +117,16 @@ const ChatGptPlugin = (props: Props) => {
   }
 
   const handleSaveArticle = async () => {
+    
     setSavingArticle(true);  
-     fetch(`https://api.unsplash.com/photos/random?query=${title}`, {
-      headers: {
-        'Authorization': 'Client-ID TF4fmJTGOS4ZnMqNBz2qTc-LyPPddE_9BKcFNmCv-CI'
-      }
-    })
-    .then(response => response.json())
-    .then(data => {
+
+    (async () => {
+      const query = title;
+      const asset = await uploadUnsplashImage(query);
+      //console.log(asset.user.name);
+      console.log(asset.description);
+
+    
       const mutations = [{
         create: {
           _id: 'drafts.',
@@ -131,10 +134,19 @@ const ChatGptPlugin = (props: Props) => {
           title: title,
           ingress: ingress,
           body: body,
-          image: data
+          image: {
+            _type: 'image',
+            asset: {
+              _type: 'reference',
+              _ref: asset._id,
+            },
+            caption: asset.caption,
+            description: asset.description,
+          }
         }
       }]
-    
+
+
       fetch(`https://9mm9d4oe.api.sanity.io/v2021-06-07/data/mutate/production`, {
         method: 'post',
         headers: {
@@ -152,6 +164,51 @@ const ChatGptPlugin = (props: Props) => {
       })
       .then(result => console.log(result))
       .catch(error => console.error(error))
+
+      console.log('Unsplash image asset:', asset);
+    })();
+
+    
+
+     /*fetch(`https://api.unsplash.com/photos/random?query=${title}`, {
+      headers: {
+        'Authorization': 'Client-ID TF4fmJTGOS4ZnMqNBz2qTc-LyPPddE_9BKcFNmCv-CI'
+      }
+    })
+    .then(response => {
+      const JSonData = response.json();
+    })
+    .then(data => {
+      const mutations = [{
+        create: {
+          _id: 'drafts.',
+          _type: 'article',
+          title: title,
+          ingress: ingress,
+          body: body,
+          image: data
+        }
+      }]
+      */
+    
+      /*fetch(`https://9mm9d4oe.api.sanity.io/v2021-06-07/data/mutate/production`, {
+        method: 'post',
+        headers: {
+          'Content-type': 'application/json',
+          Authorization: `Bearer skJ78olbMh27rRg2cxOeeG1iyTPzukQiLhbcb99svE685auLmN1MgYb76uJUQFd3lQx99jKssgNoROjh8Gr1AGr7tGwQnYX718zYaEn3vHnYlmINT3AGr3DqszpQ4clmJb5j8MRDSjhVeZRKidQ1vnq5xDwaHekwCtYt5eS6d6iXA2mGYtEA`
+        },
+        body: JSON.stringify({mutations})
+      })
+      .then(response => {
+        response.json();
+        setTitle('');
+        setIngress('');
+        setBody('');
+        setSavingArticle(false);
+      })
+      .then(result => console.log(result))
+      .catch(error => console.error(error))*/
+    }
       /*const photoData = data as {
         urls: {
           regular: string;
@@ -169,7 +226,7 @@ const ChatGptPlugin = (props: Props) => {
     .catch(error => {
       console.error('Error fetching photo:', error);
     }*/
-    });
+    //});
     //this.unsplash = createApi({ 'TF4fmJTGOS4ZnMqNBz2qTc-LyPPddE_9BKcFNmCv-CI', fetch });
     //const unsplash = new Unsplash('TF4fmJTGOS4ZnMqNBz2qTc-LyPPddE_9BKcFNmCv-CI');
     //await unsplash.getPhoto('buffer', title);
@@ -177,7 +234,6 @@ const ChatGptPlugin = (props: Props) => {
     //const unsplash = new Unsplash('TF4fmJTGOS4ZnMqNBz2qTc-LyPPddE_9BKcFNmCv-CI');
     //await unsplash.getPhoto('file', titles[i]);
 
-  }
 
   return (
   <Box>
