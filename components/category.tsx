@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Box, Button, Select,  Card,  TextArea, Inline, Checkbox, Flex, Text, Radio, Label, Stack } from '@sanity/ui';
 import { Configuration, OpenAIApi } from "openai";
 //import { Unsplash } from "./unsplash/unsplash.js";
+import {uploadAsset} from "./uploadAsset";
 
 interface Props {
   onClose: () => void;
@@ -117,7 +118,9 @@ const ChatGptPlugin = (props: Props) => {
 
   const handleSaveArticle = async () => {
     setSavingArticle(true);  
-     fetch(`https://api.unsplash.com/photos/random?query=${title}`, {
+    //uploadAsset();
+    const un
+    fetch(`https://api.unsplash.com/photos/random?query=${title}`, {
       headers: {
         'Authorization': 'Client-ID TF4fmJTGOS4ZnMqNBz2qTc-LyPPddE_9BKcFNmCv-CI'
       }
@@ -174,8 +177,9 @@ const ChatGptPlugin = (props: Props) => {
     //const unsplash = new Unsplash('TF4fmJTGOS4ZnMqNBz2qTc-LyPPddE_9BKcFNmCv-CI');
     //await unsplash.getPhoto('buffer', title);
     //const img = await fetch(photoUrl)  
+    
     //const unsplash = new Unsplash('TF4fmJTGOS4ZnMqNBz2qTc-LyPPddE_9BKcFNmCv-CI');
-    //await unsplash.getPhoto('file', titles[i]);
+    //await unsplash.getPhoto('file', title);
 
   }
 

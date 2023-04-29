@@ -1,5 +1,5 @@
 /*import { createApi } from 'unsplash-js';
-import fetch from 'node-fetch';
+//import fetch from 'node-fetch';
 import fs from 'fs';
 
 export class Unsplash {
@@ -22,10 +22,12 @@ export class Unsplash {
       const aRandomPhoto = response.response.results[Math.floor(Math.random() * 8)];
       // Get the regular size photo url
       const photoUrl = aRandomPhoto.urls.regular;
+      console.log(photoUrl);
       // Fetch the photo
       const photo = await fetch(photoUrl);
       // Get the photo buffer
       const photoBuffer = await photo.arrayBuffer();
+      console.log(photoBuffer);
       // Create caption for the photo - in Unsplash attribution style
       const caption = `
         <a style="text-decoration: none; cursor: default; pointer-events: none; color: inherit;">
@@ -39,10 +41,11 @@ export class Unsplash {
           Unsplash
         </a>
       `;
+      console.log(caption);
 
       // Check the value of the "type" parameter and execute the corresponding code block
       switch (type) {
-        case 'buffer':
+        case 'buffer': {
           // Convert the photo buffer to Uint8Array
           const data = new Uint8Array(photoBuffer);
           console.log(`${query}.jpg buffer ready`);
@@ -55,7 +58,8 @@ export class Unsplash {
             },
             buffer: data
           };
-        case 'file':
+        }
+        case 'file': {
           // Convert the photo buffer to a Buffer
           const image = Buffer.from(photoBuffer);
            // Create a file path for the photo
@@ -64,6 +68,7 @@ export class Unsplash {
           await fs.promises.writeFile(filePath, image);
           console.log(`${query}.jpg saved`);
           break;
+        } 
         default:
           console.log(`Invalid type: ${type}`);
           return null;
