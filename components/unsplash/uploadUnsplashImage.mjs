@@ -6,6 +6,7 @@ import { createClient } from '@sanity/client';
 const client = createClient({
   projectId: '9mm9d4oe',
   dataset: 'production',
+  apiVersion: new Date().toISOString().split('T')[0], // set API version to today's date in UTC timezone
   token: 'sk8ANkrJ9EthuQbUNvXDbw4tgdWZQW1TM2VVJgkqZZL5Ck78KE3jyGPQQ7NGnNxo6uhbihb9nlNcR1JNWc7Ob3ThmxelcnUesXO2rzu88NvBvMy7yLbQSclYGrBJt195jT8XqhmgJ4lRf2rwXwop6axseITxTZwELrDeyo4cpboFdMH5VJZO', // Make sure you have the correct permissions to upload assets
   useCdn: false,
 });
@@ -25,7 +26,6 @@ async function downloadImageAsBuffer(url) {
     const file = new File([blob], 'unsplash-image.jpg', { type: 'image/jpeg' });
     return file;
   }
-  
 
 async function uploadUnsplashImage(query) {
   try {
@@ -45,7 +45,6 @@ async function uploadUnsplashImage(query) {
     const description = unsplashData.results[0].description;
     console.log(description);
     
-
     const imageData = await downloadImageAsBuffer(imageUrl);
 
     const asset = await client.assets.upload('image', imageData, {
@@ -57,7 +56,8 @@ async function uploadUnsplashImage(query) {
       asset: asset,
       caption: caption
     }
-  } catch (error) {
+  } 
+  catch (error) {
     console.error('Error uploading Unsplash image:', error);
     throw error;
   }

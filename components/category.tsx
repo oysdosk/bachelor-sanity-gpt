@@ -3,6 +3,10 @@ import { Box, Button, Select,  Card,  TextArea, Inline, Checkbox, Flex, Text, Ra
 import { Configuration, OpenAIApi } from "openai";
 import uploadUnsplashImage from './unsplash/uploadUnsplashImage.mjs';
 
+const projectId = '9mm9d4oe';
+const dataset = 'production';
+const token = 'sk8ANkrJ9EthuQbUNvXDbw4tgdWZQW1TM2VVJgkqZZL5Ck78KE3jyGPQQ7NGnNxo6uhbihb9nlNcR1JNWc7Ob3ThmxelcnUesXO2rzu88NvBvMy7yLbQSclYGrBJt195jT8XqhmgJ4lRf2rwXwop6axseITxTZwELrDeyo4cpboFdMH5VJZO';
+const apiUrl = `https://${projectId}.api.sanity.io/v1/data/query/${dataset}`;
 interface Props {
   onClose: () => void;
 }
@@ -26,12 +30,14 @@ const ChatGptPlugin = (props: Props) => {
   const [body, setBody] = useState('');
   const [radio, setRadio] = useState('');
   const [query, setQuery] = useState('');
+  const [transactionId, setTransactionId] = useState(null);
 
   const handleChange = (event) => {
     setRadio(event.currentTarget.value);
   };
 
   let titlesSplit = Array(5);
+  const currentDate = new Date().toISOString().split('T')[0];
   
   const [titles, setTitles] = useState(['', '', '','','']);
 
@@ -168,57 +174,84 @@ const ChatGptPlugin = (props: Props) => {
     })
     .catch(error => console.error(error));
   }
-    useEffect(() => {
 
-      (async () => {
-        console.log(query);
-        const asset = (await uploadUnsplashImage(query)).asset;
-        const caption = (await uploadUnsplashImage(query)).caption;
-        console.log(caption);
-        console.log(asset.description);
-  
-      
-        const mutations = [{
-          create: {
-            _id: 'drafts.',
-            _type: 'article',
-            title: title,
-            ingress: ingress,
-            body: body,
-            image: {
-              _type: 'image',
-              asset: {
-                _type: 'reference',
-                _ref: asset._id,
-              },
-              caption: caption,
-              description: asset.description,
-            }
+  useEffect(() => {
+
+    if (query === '') return;
+
+    (async () => {
+      console.log(query);
+      const asset = (await uploadUnsplashImage(query)).asset;
+      const caption = (await uploadUnsplashImage(query)).caption;
+      console.log(caption);
+      console.log(asset.description);
+      setQuery('');
+
+      const mutations = [{
+        create: {
+          _id: 'drafts.',
+          _type: 'article',
+          title: title,
+          ingress: ingress,
+          body: body,
+          image: {
+            _type: 'image',
+            asset: {
+              _type: 'reference',
+              _ref: asset._id,
+            },
+            caption: caption,
+            description: asset.description,
           }
-        }]
-  
-  
-    fetch(`https://9mm9d4oe.api.sanity.io/v2021-06-07/data/mutate/production`, {
-      method: 'post',
-      headers: {
-        'Content-type': 'application/json',
-        Authorization: `Bearer skJ78olbMh27rRg2cxOeeG1iyTPzukQiLhbcb99svE685auLmN1MgYb76uJUQFd3lQx99jKssgNoROjh8Gr1AGr7tGwQnYX718zYaEn3vHnYlmINT3AGr3DqszpQ4clmJb5j8MRDSjhVeZRKidQ1vnq5xDwaHekwCtYt5eS6d6iXA2mGYtEA`
-      },
-      body: JSON.stringify({mutations})
-    })
-    .then(response => {
-      response.json();
-      setTitle('');
-      setIngress('');
-      setBody('');
-      setSavingArticle(false);
-    })
-    .then(result => console.log(result))
-    .catch(error => console.error(error))
+        }
+      }]
 
-    console.log('Unsplash image asset:', asset);
-  })();
-}, [query]);
+  fetch(`https://9mm9d4oe.api.sanity.io/v${currentDate}/data/mutate/production`, {
+    method: 'post',
+    headers: {
+      'Content-type': 'application/json',
+      Authorization: `Bearer skJ78olbMh27rRg2cxOeeG1iyTPzukQiLhbcb99svE685auLmN1MgYb76uJUQFd3lQx99jKssgNoROjh8Gr1AGr7tGwQnYX718zYaEn3vHnYlmINT3AGr3DqszpQ4clmJb5j8MRDSjhVeZRKidQ1vnq5xDwaHekwCtYt5eS6d6iXA2mGYtEA`
+    },
+    body: JSON.stringify({mutations})
+  })
+  .then(response => {
+    setTitle('');
+    setIngress('');
+    setBody('');
+    setSavingArticle(false);
+    return response.json();
+  })
+  .then(result => {
+    console.log(result.transactionId)
+    setTransactionId(result.transactionId);
+  })
+  .catch(error => console.error(error))
+
+  console.log('Unsplash image asset: ', asset);
+})();
+}
+, [query]);
+
+if (transactionId !== null){
+// Define your query to retrieve the most recent document
+const query = '*[_type == "article"] | order(_createdAt desc) [0]';
+setTransactionId(null);
+
+// Fetch the document
+fetch(`${apiUrl}?query=${encodeURIComponent(query)}`, {
+  headers: { Authorization: `Bearer ${token}` }
+})
+  .then(response => response.json())
+  .then(data => {
+    // The most recent document should be in the first element of the array
+    const articleId = data.result._id;
+    console.log(articleId);
+    console.log(`http://localhost:3333/desk/article;${articleId}`);
+    window.location.href = `http://localhost:3333/desk/article;${articleId}`
+  })
+  .catch(error => console.error(error));
+}
+
 
   
 
