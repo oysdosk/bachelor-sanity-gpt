@@ -1,6 +1,7 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Box, Button, Select,  Card,  TextArea, Inline, Checkbox, Flex, Text, Radio, Label, Stack } from '@sanity/ui';
 import { Configuration, OpenAIApi } from "openai";
+import uploadUnsplashImage from './unsplash/uploadUnsplashImage.mjs';
 import { resolveConfig } from 'sanity';
 //import { Unsplash } from "./unsplash/unsplash.js";
 
@@ -20,32 +21,18 @@ const ChatGptPlugin = (props: Props) => {
   const [loadingTitle, setLoadingTitle] = useState(false);
   const [loadingArticle, setLoadingArticle] = useState(false);
   const [savingArticle, setSavingArticle] = useState(false);
-  const [showTopic, setShowTopic] = useState(true);
-  const [showTitles, setShowTitles] = useState(false);
-  const [showArticle, setShowArticle] = useState(false);
-  const [responseTitles, setResponseTitles] = useState(false);
+  const [showTopic, setShowTopic] = useState(1);
   const [prompt, setPrompt] = useState('');
   const [title, setTitle] = useState('');
   const [ingress, setIngress] = useState('');
   const [body, setBody] = useState('');
   const [radio, setRadio] = useState('');
+  const [query, setQuery] = useState('');
 
-  /*const handleChange = useCallback((event) => {
-    setRadio(event.currentTarget.value)
-  }, [])*/
   const handleChange = (event) => {
     setRadio(event.currentTarget.value);
   };
-  const handleShowTitles = () => {
-    setShowTopic(!showTopic);
-    setShowTitles(!showTitles);
-  }
-  const handleShowArticle = () => {
-    setShowTitles(!showTitles);
-    setShowArticle(!showArticle);
-  }
 
-  //let category = document.getElementById('input')?.innerHTML;
   let titlesSplit = Array(5);
   
   const [titles, setTitles] = useState(['', '', '','','']);
@@ -96,22 +83,10 @@ const ChatGptPlugin = (props: Props) => {
 
       setTitles(newTitles);
       setLoadingTitle(false);
-      //setResponseTitles(true);
+      setShowTopic(2);
       console.log(titles);
-      //handleShowTitles();
-      
-      // Set loading state back to false and close the plugin
-      //props.onClose();
     }
     return true;
-  }
-
-  const titlesList = async () => {
-    handleGenerateTitles().then(handleShowTitles);
-    /*while (!responseTitles) {
-      console.log('waiting')
-    }
-    handleShowTitles();*/
   }
 
 
@@ -167,26 +142,65 @@ const ChatGptPlugin = (props: Props) => {
       setBody(cleanBody);
       //setBody(article[3]);
       setLoadingArticle(false);
-      handleShowArticle();
+      setShowTopic(3);
     }
   }
 
   const handleSaveArticle = async () => {
+    
     setSavingArticle(true);  
-      
-    //const unsplash = new Unsplash('TF4fmJTGOS4ZnMqNBz2qTc-LyPPddE_9BKcFNmCv-CI');
-    //await unsplash.getPhoto('file', titles[i]);
-
-    const mutations = [{
-      create: {
-        _id: 'drafts.',
-        _type: 'article',
-        title: title,
-        ingress: ingress,
-        body: body,
-        //image: `./images/${titles[i]}.jpg`
+    const queryPrompt = `Suggest two keywords based on the following ingress: ${ingress}. Your response should only consist of those two words.`
+    const queryAssistant =  `keyword1 keyword2`;
+    
+    // API prompt for Unsplash query
+    openai.createChatCompletion({
+      messages: [
+       {role: 'user', content: queryPrompt},
+       {role: 'assistant', content: queryAssistant }
+      ],
+      model: 'gpt-3.5-turbo-0301',
+      temperature: 0.8,
+      max_tokens: 2048,
+    })
+    .then(response => {
+      console.log(response);
+      const res = response.data.choices[0].message?.content;
+      console.log(res);
+      if (res != undefined) {
+        setQuery(res);
       }
-    }]
+    })
+    .catch(error => console.error(error));
+  }
+    useEffect(() => {
+
+      (async () => {
+        console.log(query);
+        const asset = (await uploadUnsplashImage(query)).asset;
+        const caption = (await uploadUnsplashImage(query)).caption;
+        console.log(caption);
+        console.log(asset.description);
+  
+      
+        const mutations = [{
+          create: {
+            _id: 'drafts.',
+            _type: 'article',
+            title: title,
+            ingress: ingress,
+            body: body,
+            image: {
+              _type: 'image',
+              asset: {
+                _type: 'reference',
+                _ref: asset._id,
+              },
+              caption: caption,
+              description: asset.description,
+            }
+          }
+        }]
+  
   
     fetch(`https://9mm9d4oe.api.sanity.io/v2021-06-07/data/mutate/production`, {
       method: 'post',
@@ -198,13 +212,10 @@ const ChatGptPlugin = (props: Props) => {
     })
     .then(response => {
       response.json();
-      console.log(response);
-      console.log(response.json);
       setTitle('');
       setIngress('');
       setBody('');
       setSavingArticle(false);
-      window.location.href = "http://localhost:3333/desk/article;MGvyMBvlSfELxXPfTNfbgh";
     })
     .then(result => console.log(result))
     .catch(error => console.error(error))
@@ -212,7 +223,7 @@ const ChatGptPlugin = (props: Props) => {
 
   return (
   <Box>
-    <Box style={{ display : showTopic ? "block" : "none" }}>
+    <Box style={{ display : showTopic==1 ? "block" : "none" }}>
       <Card padding={4}>
         <Text size={4}>ChatGPT Article Generator</Text>
       </Card>
@@ -229,9 +240,8 @@ const ChatGptPlugin = (props: Props) => {
         />
       </Card>
       <Card padding={4}>
-        <Button onClick={titlesList}
+        <Button onClick={handleGenerateTitles}
           fontSize={[2, 2, 3]}
-          //icon={AddIcon}
           mode="ghost"
           padding={[3, 3, 4]}
           radius={3}
@@ -242,7 +252,7 @@ const ChatGptPlugin = (props: Props) => {
         {loadingTitle && <h3>Loading titles...</h3>}
       </Card>
     </Box>
-    <Box style={{ display : showTitles ? "block" : "none" }}>
+    <Box style={{ display : showTopic==2 ? "block" : "none" }}>
       <Card padding={4}>
         <Flex align="center">
           <Radio id="radio1" style={{display: 'block'}} 
@@ -317,7 +327,6 @@ const ChatGptPlugin = (props: Props) => {
       <Card padding={4}>
         <Button onClick={handleGenerateTitles}
           fontSize={[2, 2, 3]}
-          //icon={AddIcon}
           mode="ghost"
           padding={[3, 3, 4]}
           radius={3}
@@ -327,7 +336,6 @@ const ChatGptPlugin = (props: Props) => {
       <Card padding={4}>
         <Button onClick={(e:any) => handleGenerateArticle(radio)}
           fontSize={[2, 2, 3]}
-          //icon={AddIcon}
           mode="ghost"
           padding={[3, 3, 4]}
           radius={3}
@@ -335,14 +343,15 @@ const ChatGptPlugin = (props: Props) => {
         />
       </Card>
       <Card padding={4}>
+        {loadingTitle && <h3>Loading titles...</h3>}
         {loadingArticle && <h3>Loading article...</h3>}
       </Card>
     </Box>
-    <Stack padding={4} space={[5,5,5,5]} style={{ display : showArticle ? "block" : "none" }}>
+    <Stack padding={4} space={[5,5,5,5]} style={{ display : showTopic==3 ? "block" : "none" }}>
       <Card padding={4}>
         <Label size={4}>Title</Label>
       </Card>
-      <Card>
+      <Card paddingBottom={4} paddingLeft={4}>
         <TextArea id="title"
           fontSize={[2, 2, 3, 3]}
           onChange={(event) =>
@@ -354,10 +363,10 @@ const ChatGptPlugin = (props: Props) => {
           value={title}
         />
       </Card>
-      <Card padding={4}>
+      <Card paddingBottom={4} paddingLeft={4}>
         <Label size={4}>Ingress</Label>
       </Card>
-      <Card>
+      <Card paddingBottom={4} paddingLeft={4}>
         <TextArea id="ingress"
           fontSize={[2, 2, 3, 3]}
           onChange={(event) =>
@@ -369,10 +378,10 @@ const ChatGptPlugin = (props: Props) => {
           value={ingress}
         />
       </Card>
-      <Card padding={4}>
+      <Card paddingBottom={4} paddingLeft={4}>
         <Label size={4}>Body</Label>
       </Card>
-      <Card>
+      <Card paddingBottom={4} paddingLeft={4}>
         <TextArea id="body"
           fontSize={[2, 2, 3, 3]}
           onChange={(event) =>
@@ -385,17 +394,26 @@ const ChatGptPlugin = (props: Props) => {
         />
       </Card>
       <Card padding={4}>
+      <Button onClick={(e:any) => handleGenerateArticle(radio)}
+          fontSize={[2, 2, 3]}
+          mode="ghost"
+          padding={[3, 3, 4]}
+          radius={3}
+          text="Try again"
+        />
+      </Card>
+      <Card padding={4}>
         <Button onClick={(e:any) => handleSaveArticle()}
           fontSize={[2, 2, 3]}
-          //icon={AddIcon}
           mode="ghost"
           padding={[3, 3, 4]}
           radius={3}
           text="Save article"
         />
       </Card>
-      <Card padding={4}>
+      <Card paddingBottom={4} paddingLeft={4}>
         {savingArticle && <h3>Saving article...</h3>}
+        {loadingArticle && <h3>Loading article...</h3>}
       </Card>
     </Stack>
   </Box>
