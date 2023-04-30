@@ -10,7 +10,7 @@ import ChatGptPlugin from './components/category'
 const chatGptTool = () => {
   return {
     title: 'Chat-GPT',
-    name: 'chat-gpt-tool', // localhost:3333/chat-gpt-tool
+    name: 'chat-gpt-tool',
     icon: DashboardIcon,
     component: ChatGptPlugin,
   }

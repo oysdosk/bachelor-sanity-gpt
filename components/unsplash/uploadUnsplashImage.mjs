@@ -1,18 +1,16 @@
-//import fetch from 'node-fetch';
-//import sanityClient from '@sanity/client';
 import { createClient } from '@sanity/client';
 
 
 const client = createClient({
   projectId: '9mm9d4oe',
   dataset: 'production',
-  apiVersion: new Date().toISOString().split('T')[0], // set API version to today's date in UTC timezone
+  apiVersion: new Date().toISOString().split('T')[0],
   token: 'sk8ANkrJ9EthuQbUNvXDbw4tgdWZQW1TM2VVJgkqZZL5Ck78KE3jyGPQQ7NGnNxo6uhbihb9nlNcR1JNWc7Ob3ThmxelcnUesXO2rzu88NvBvMy7yLbQSclYGrBJt195jT8XqhmgJ4lRf2rwXwop6axseITxTZwELrDeyo4cpboFdMH5VJZO', // Make sure you have the correct permissions to upload assets
   useCdn: false,
 });
 
-
 const unsplashAccessKey = 'TF4fmJTGOS4ZnMqNBz2qTc-LyPPddE_9BKcFNmCv-CI';
+
 
 async function downloadImageAsBuffer(url) {
     const response = await fetch(url);

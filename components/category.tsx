@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Box, Button, Select,  Card,  TextArea, Inline, Checkbox, Flex, Text, Radio, Label, Stack } from '@sanity/ui';
+import { Box, Button, Card,  TextArea, Flex, Text, Radio, Label, Stack } from '@sanity/ui';
 import { Configuration, OpenAIApi } from "openai";
 import uploadUnsplashImage from './unsplash/uploadUnsplashImage.mjs';
 
@@ -45,9 +45,6 @@ const ChatGptPlugin = (props: Props) => {
   const handleGenerateTitles = async () => {
     setLoadingTitle(true);
   
-    //const systemPrompt = 'Whatever questions you receive, only respond with a list of titles.'
-    //const titlePrompt = `Suggest five titles for an article about ${prompt}. Separate each title only by a comma and space, and wrap them in single quotes.`
-    //const titleAssistant =  `Example: 'Title1', 'Title2', 'Title3', 'Title4', 'Title5'`;
     const titlePrompt = `Suggest five titles for an article about ${prompt}. Separate each title only by a triple $ mark and a space. Important: Do not use any quotation marks around the titles.`
     const titleAssistant =  `Example: $$$Title1 $$$Title2 $$$Title3 $$$Title4 $$$Title5`;
     const titleSystem = `You are a news editor looking for captivating titles for your articles. Your purpose here is to only answer with titles. Important: Do not use any quotation marks around the titles.`
@@ -59,7 +56,6 @@ const ChatGptPlugin = (props: Props) => {
        {role: 'assistant', content: titleAssistant },
        {role: 'user', content: titlePrompt},
        {role: 'system', content: titleSystem},
-       //{role: 'system', content:systemPrompt}
       ],
       model: 'gpt-3.5-turbo-0301',
       temperature: 0.8,
@@ -77,9 +73,7 @@ const ChatGptPlugin = (props: Props) => {
       //titlesSplit = removeLines.split(", ");
       titlesSplit = msg.split('$$$');
       console.log(titlesSplit);
-      for (let i = 0; i < titlesSplit.length; i++){
-        //console.log(titlesSplit[i]);
-      }
+
       const newTitles = titles.map((t,  i) => {
         t = titlesSplit[i+1];
         console.log(t);
@@ -93,7 +87,6 @@ const ChatGptPlugin = (props: Props) => {
     }
     return true;
   }
-
 
   const handleGenerateArticle = async (title: string) => {
     setLoadingArticle(true);
@@ -131,21 +124,16 @@ const ChatGptPlugin = (props: Props) => {
       const cleanIngress = ingress.split('Ingress:').pop().split('Body')[0];
       const cleanBody = body.split('Body:').pop();
 
-
-      /*const ingresses = [];
-      const bodies = [];
+      /*
       for (let i = 1; i < articles.length; i++){
         if ((i-2)%3 == 0) { ingresses.push(articles[i]); console.log(articles[i]) }
         if (i%3 == 0) { bodies.push(articles[i]); console.log(articles[i])}
       }*/
       
       console.log(article);
-
       setTitle(title);
-      //setIngress(article[2]);
       setIngress(cleanIngress);
       setBody(cleanBody);
-      //setBody(article[3]);
       setLoadingArticle(false);
       setShowTopic(3);
     }
@@ -154,7 +142,7 @@ const ChatGptPlugin = (props: Props) => {
   const handleSaveArticle = async () => {
     
     setSavingArticle(true);  
-    const queryPrompt = `Suggest two keywords based on the following ingress: ${ingress}. Your response should only consist of those two words.`
+    const queryPrompt = `Suggest two keywords based on the following ingress: '${ingress}'. Your response should only consist of those two words.`
     const queryAssistant =  `keyword1 keyword2`;
     
     // API prompt for Unsplash query
@@ -207,7 +195,7 @@ const ChatGptPlugin = (props: Props) => {
         }
       }]
 
-  fetch(`https://9mm9d4oe.api.sanity.io/v${currentDate}/data/mutate/production`, {
+  fetch(`https://${projectId}.api.sanity.io/v${currentDate}/data/mutate/${dataset}`, {
     method: 'post',
     headers: {
       'Content-type': 'application/json',
@@ -223,8 +211,8 @@ const ChatGptPlugin = (props: Props) => {
     return response.json();
   })
   .then(result => {
-    console.log(result.transactionId)
     setTransactionId(result.transactionId);
+    console.log('Transaction ID: ' + result.transactionId)
   })
   .catch(error => console.error(error))
 
@@ -234,28 +222,22 @@ const ChatGptPlugin = (props: Props) => {
 , [query]);
 
 if (transactionId !== null){
-// Define your query to retrieve the most recent document
 const idQuery = '*[_type == "article"] | order(_createdAt desc) [0]';
 setTransactionId(null);
 
-// Fetch the document
+// Fetch last created document 
 fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
   headers: { Authorization: `Bearer ${token}` }
 })
   .then(response => response.json())
   .then(data => {
-    // The most recent document should be in the first element of the array
     const articleId = data.result._id;
-    console.log(articleId);
+    console.log('Article ID: ' + articleId);
     console.log(`http://localhost:3333/desk/article;${articleId}`);
     window.location.href = `http://localhost:3333/desk/article;${articleId}`
   })
   .catch(error => console.error(error));
 }
-
-
-  
-
 
   return (
   <Box>
