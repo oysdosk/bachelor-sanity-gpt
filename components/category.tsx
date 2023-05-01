@@ -81,11 +81,11 @@ const ChatGptPlugin = (props: Props) => {
       }); 
 
       setTitles(newTitles);
+      
       setLoadingTitle(false);
       setShowTopic(2);
-      console.log(titles);
     }
-    return true;
+    //return true;
   }
 
   const handleGenerateArticle = async (title: string) => {
@@ -142,8 +142,8 @@ const ChatGptPlugin = (props: Props) => {
   const handleSaveArticle = async () => {
     
     setSavingArticle(true);  
-    const queryPrompt = `Suggest two keywords based on the following ingress: '${ingress}'. Your response should only consist of those two words.`
-    const queryAssistant =  `keyword1 keyword2`;
+    const queryPrompt = `Suggest two keywords based on the following ingress: '${ingress}'. Your response should only consist of those two words encapsulated within the same double quotes.`
+    const queryAssistant =  `"keyword1 keyword2"`;
     
     // API prompt for Unsplash query
     openai.createChatCompletion({
@@ -242,8 +242,8 @@ fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
   return (
   <Box>
     <Box style={{ display : showTopic==1 ? "block" : "none" }}>
-      <Card padding={4}>
-        <Text size={4}>ChatGPT Article Generator</Text>
+      <Card padding={4} margin={4} paddingBottom={0}>
+        <Text size={4}>CHATGPT ARTICLE GENERATOR</Text>
       </Card>
       <Card padding={4}>
         <TextArea id="input"
@@ -271,6 +271,9 @@ fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
       </Card>
     </Box>
     <Box style={{ display : showTopic==2 ? "block" : "none" }}>
+      <Card padding={4} margin={4} paddingBottom={0}>
+        <Text size={4}>GENERATED TITLES</Text>
+      </Card>
       <Card padding={4}>
         <Flex align="center">
           <Radio id="radio1" style={{display: 'block'}} 
@@ -366,6 +369,9 @@ fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
       </Card>
     </Box>
     <Stack padding={4} space={[5,5,5,5]} style={{ display : showTopic==3 ? "block" : "none" }}>
+      <Card padding={4} margin={4} paddingBottom={0}>
+        <Text size={4}>GENERATED ARTICLE</Text>
+      </Card>
       <Card padding={4}>
         <Label size={4}>Title</Label>
       </Card>

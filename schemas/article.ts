@@ -38,6 +38,12 @@ export default defineType({
         type: 'text',
       }),
       defineField({
+        name: 'author',
+        title: 'Author',
+        type: 'reference',
+        to: {type: 'author'},
+      }),
+      defineField({
         name: 'publishedAt',
         title: 'Published at',
         type: 'datetime',
