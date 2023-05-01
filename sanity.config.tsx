@@ -19,7 +19,7 @@ const chatGptTool = () => {
 
 export default defineConfig({
   name: 'default',
-  title: 'sanity-test-2',
+  title: 'Sanity',
 
   projectId: '9mm9d4oe',
   dataset: 'production',
