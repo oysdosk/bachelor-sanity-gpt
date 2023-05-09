@@ -26,6 +26,7 @@ const ChatGptPlugin = (props: Props) => {
   const [savingArticle, setSavingArticle] = useState(false);
   const [showTopic, setShowTopic] = useState(1);
   const [prompt, setPrompt] = useState('');
+  const [inputTitle, setInputTitle] = useState('');
   const [title, setTitle] = useState('');
   const [ingress, setIngress] = useState('');
   const [body, setBody] = useState('');
@@ -246,7 +247,7 @@ fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
         <Text size={4}>CHATGPT ARTICLE GENERATOR</Text>
       </Card>
       <Card padding={4}>
-        <TextArea id="input"
+        <TextArea id="inputTopic"
           fontSize={[2, 2, 3, 3]}
           onChange={(event) =>
             setPrompt(event.currentTarget.value)
@@ -267,7 +268,29 @@ fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
           />
       </Card>
       <Card padding={4}>
+        <TextArea id="inputTitle"
+          fontSize={[2, 2, 3, 3]}
+          onChange={(event) =>
+            setInputTitle(event.currentTarget.value)
+          }
+          padding={[3, 3, 4]}
+          radius={3}
+          placeholder="Give me a title ..."
+          value={inputTitle}
+        />
+      </Card>
+      <Card padding={4}>
+        <Button onClick={(e:any) => handleGenerateArticle(inputTitle)}
+          fontSize={[2, 2, 3]}
+          mode="ghost"
+          padding={[3, 3, 4]}
+          radius={3}
+          text="Create article"
+          />
+      </Card>
+      <Card padding={4}>
         {loadingTitle && <h3>Loading titles...</h3>}
+        {loadingArticle && <h3>Loading article...</h3>}
       </Card>
     </Box>
     <Box style={{ display : showTopic==2 ? "block" : "none" }}>
