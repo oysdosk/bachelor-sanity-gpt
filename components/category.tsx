@@ -111,9 +111,9 @@ const ChatGptPlugin = (props: Props) => {
     .catch(error => console.error(error));
 
     const getArticle = async (msg) => {
-      const title = msg.split(`\"title\": \"`).pop().split(`\",\n`)[0];
-      const ingress = msg.split(`"ingress\": \"`).pop().split(`\",\n`)[0];
-      const body = msg.split(`"body\": \"`).pop().split(`\" \n`)[0].replace(/\\n/g, '\n');
+      let title = msg.split(`\"title\": \"`).pop().split(`\",\n`)[0];
+      let ingress = msg.split(`"ingress\": \"`).pop().split(`\",\n`)[0];
+      let body = msg.split(`"body\": \"`).pop().split(`\" \n}`)[0].replace(/\\n/g, '\n').split(`\"\n}`)[0];
 
       console.log("TITTEL: " + title);
       console.log("INGRESS: " + ingress);
@@ -130,8 +130,9 @@ const ChatGptPlugin = (props: Props) => {
   const handleSaveArticle = async () => {
     
     setSavingArticle(true);  
-    const queryPrompt = `Suggest two keywords based on the following ingress: '${ingress}'. Your response should only consist of those two words encapsulated within the same double quotes.`
-    const queryAssistant =  `"keyword1 keyword2"`;
+    const queryPrompt = `Suggest a single keyword based on the following ingress: '${ingress}'. Your response should only consist of that one word encapsulated within double quotes.
+    If the ingress is about a person or a place, make sure to use that person or place as the keyword.`
+    const queryAssistant =  `Example: "keyword"`;
     
     // API prompt for Unsplash query
     openai.createChatCompletion({
