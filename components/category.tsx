@@ -46,7 +46,8 @@ const ChatGptPlugin = (props: Props) => {
   const handleGenerateTitles = async () => {
     setLoadingTitle(true);
   
-    const titlePrompt = `Suggest five titles for an article about ${prompt}. Separate each title only by a triple $ mark and a space. Important: Do not use any quotation marks around the titles.`
+    const titlePrompt = `Suggest five titles for an article about ${prompt}. 
+    `
     const titleAssistant =  `Example: $$$Title1 $$$Title2 $$$Title3 $$$Title4 $$$Title5`;
     const titleSystem = `You are a news editor looking for captivating titles for your articles. Your purpose here is to only answer with titles. Important: Do not use any quotation marks around the titles.`
     
@@ -70,8 +71,6 @@ const ChatGptPlugin = (props: Props) => {
     .catch(error => console.error(error));
 
     const getTitles = (msg) => {
-      //const removeLines = msg.replace("\n\n","");
-      //titlesSplit = removeLines.split(", ");
       titlesSplit = msg.split('$$$');
       console.log(titlesSplit);
 
@@ -86,22 +85,19 @@ const ChatGptPlugin = (props: Props) => {
       setLoadingTitle(false);
       setShowTopic(2);
     }
-    //return true;
   }
 
   const handleGenerateArticle = async (title: string) => {
     setLoadingArticle(true);
 
     const articlePrompt = `Write an ingress and a body for the following article titled ${title}.
-      Prefix each section (Title, Ingress and Body) with a triple $ mark.`
-    const articleResponse = `$$$Title: '...'\n $$$Ingress: ...\n $$$Body: ...`
+      Return the article ONLY in JSON format with three elements: title, ingress and body."`
     const articleSystem = `Your job is to write an article based on the title you receive. You write in a tabloid and engaging style desperate to captivate the reader.`
 
     // API prompt for titles
     openai.createChatCompletion({
       messages: [
       {role: 'user', content: articlePrompt},
-      {role: 'assistant', content: articleResponse},
       {role: 'system', content: articleSystem}
       ],
       model: 'gpt-3.5-turbo-0301',
@@ -116,25 +112,17 @@ const ChatGptPlugin = (props: Props) => {
     .catch(error => console.error(error));
 
     const getArticle = async (msg) => {
-      const removeLines = msg.replace("\n","");
-      const article = removeLines.split("$$$");
-      console.log(article);
-      const ingress = article[2];
-      const body = article[3];
-      console.log(title);
-      const cleanIngress = ingress.split('Ingress:').pop().split('Body')[0];
-      const cleanBody = body.split('Body:').pop();
+      const title = msg.split(`\"title\": \"`).pop().split(`\",\n`)[0];
+      const ingress = msg.split(`"ingress\": \"`).pop().split(`\",\n`)[0];
+      const body = msg.split(`"body\": \"`).pop().split(`\" \n`)[0].replace(/\\n/g, '\n');
 
-      /*
-      for (let i = 1; i < articles.length; i++){
-        if ((i-2)%3 == 0) { ingresses.push(articles[i]); console.log(articles[i]) }
-        if (i%3 == 0) { bodies.push(articles[i]); console.log(articles[i])}
-      }*/
+      console.log("TITTEL: " + title);
+      console.log("INGRESS: " + ingress);
+      console.log("BODY: " + body);
       
-      console.log(article);
       setTitle(title);
-      setIngress(cleanIngress);
-      setBody(cleanBody);
+      setIngress(ingress);
+      setBody(body);
       setLoadingArticle(false);
       setShowTopic(3);
     }
