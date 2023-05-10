@@ -46,8 +46,7 @@ const ChatGptPlugin = (props: Props) => {
   const handleGenerateTitles = async () => {
     setLoadingTitle(true);
   
-    const titlePrompt = `Suggest five titles for an article about ${prompt}. 
-    `
+    const titlePrompt = `Suggest five titles for an article about ${prompt}. Separate each title only by a triple $ mark and a space. Important: Do not use any quotation marks around the titles.`
     const titleAssistant =  `Example: $$$Title1 $$$Title2 $$$Title3 $$$Title4 $$$Title5`;
     const titleSystem = `You are a news editor looking for captivating titles for your articles. Your purpose here is to only answer with titles. Important: Do not use any quotation marks around the titles.`
     
