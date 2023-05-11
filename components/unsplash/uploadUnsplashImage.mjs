@@ -2,13 +2,13 @@ import { createClient } from '@sanity/client';
 
 
 const client = createClient({
-  projectId: '9mm9d4oe',
-  dataset: 'production',
+  projectId: `${process.env.SANITY_STUDIO_PROJECT_ID}`,
+  dataset: `${process.env.SANITY_STUDIO_DATASET}`,
   apiVersion: new Date().toISOString().split('T')[0],
-  token: 'sk8ANkrJ9EthuQbUNvXDbw4tgdWZQW1TM2VVJgkqZZL5Ck78KE3jyGPQQ7NGnNxo6uhbihb9nlNcR1JNWc7Ob3ThmxelcnUesXO2rzu88NvBvMy7yLbQSclYGrBJt195jT8XqhmgJ4lRf2rwXwop6axseITxTZwELrDeyo4cpboFdMH5VJZO', // Make sure you have the correct permissions to upload assets
+  token: `${process.env.SANITY_STUDIO_WRITE_ACCESS}`, 
   useCdn: false,
 });
-const unsplashAccessKey = 'TF4fmJTGOS4ZnMqNBz2qTc-LyPPddE_9BKcFNmCv-CI';
+const unsplashAccessKey = `${process.env.SANITY_STUDIO_UNSPLASH_ACCESS_KEY}`;
 
 async function downloadImageAsBuffer(url) {
     const response = await fetch(url);
