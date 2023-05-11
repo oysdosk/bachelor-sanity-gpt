@@ -128,9 +128,8 @@ const ChatGptPlugin = (props: Props) => {
 
   const handleSaveArticle = async () => {
     setSavingArticle(true);  
-    const queryPrompt = `Suggest a single keyword based on the following ingress: '${ingress}'. Your response should only consist of that one word encapsulated within double quotes.
-    If the ingress is about a person or a place, make sure to use that person or place as the keyword.`
-    const queryAssistant =  `Example: "keyword"`;
+    const queryPrompt = `Suggest two keywords based on the following ingress: '${ingress}'. Your response should only consist of those two words encapsulated within the same double quotes.`
+    const queryAssistant =  `"keyword1 keyword2"`;
     
     // API prompt for Unsplash query
     openai.createChatCompletion({
@@ -237,7 +236,7 @@ fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
     const articleId = data.result._id;
     console.log('Article ID: ' + articleId);
     console.log(`http://localhost:3333/desk/article;${articleId}`);
-    //window.location.href = `http://localhost:3333/desk/article;${articleId}`
+    window.location.href = `http://localhost:3333/desk/article;${articleId}`
   })
   .catch(error => console.error(error));
 }
