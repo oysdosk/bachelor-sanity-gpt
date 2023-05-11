@@ -3,11 +3,10 @@ import { Box, Button, Card,  TextArea, Flex, Text, Radio, Label, Stack } from '@
 import { Configuration, OpenAIApi } from "openai";
 import uploadUnsplashImage from './unsplash/uploadUnsplashImage.mjs';
 
-const projectId = '9mm9d4oe';
-const dataset = 'production';
-const token = 'skJ78olbMh27rRg2cxOeeG1iyTPzukQiLhbcb99svE685auLmN1MgYb76uJUQFd3lQx99jKssgNoROjh8Gr1AGr7tGwQnYX718zYaEn3vHnYlmINT3AGr3DqszpQ4clmJb5j8MRDSjhVeZRKidQ1vnq5xDwaHekwCtYt5eS6d6iXA2mGYtEA'
-//const token = 'sk8ANkrJ9EthuQbUNvXDbw4tgdWZQW1TM2VVJgkqZZL5Ck78KE3jyGPQQ7NGnNxo6uhbihb9nlNcR1JNWc7Ob3ThmxelcnUesXO2rzu88NvBvMy7yLbQSclYGrBJt195jT8XqhmgJ4lRf2rwXwop6axseITxTZwELrDeyo4cpboFdMH5VJZO';
-const apiUrl = `https://${projectId}.api.sanity.io/v1/data/query/${dataset}`;
+const sanityProjectId = `${process.env.SANITY_STUDIO_PROJECT_ID}`;
+const sanityDataset = `${process.env.SANITY_STUDIO_DATASET}`;
+const sanityToken = `${process.env.SANITY_STUDIO_WRITE_ACCESS}`;
+const apiUrl = `https://${sanityProjectId}.api.sanity.io/v1/data/query/${sanityDataset}`;
 interface Props {
   onClose: () => void;
 }
@@ -15,8 +14,8 @@ interface Props {
 const ChatGptPlugin = (props: Props) => {
   // API config
   const configuration = new Configuration({
-    organization: 'org-TyXgxHtVwqteKe1cU3VSaW0E',
-    apiKey: "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",   
+    organization: `${process.env.SANITY_STUDIO_OPENAI_ORG_ID}`,
+    apiKey: `${process.env.SANITY_STUDIO_OPENAI_API_KEY}`,   
   });
   const openai = new OpenAIApi(configuration);
 
@@ -70,8 +69,6 @@ const ChatGptPlugin = (props: Props) => {
     .catch(error => console.error(error));
 
     const getTitles = (msg) => {
-      //const removeLines = msg.replace("\n\n","");
-      //titlesSplit = removeLines.split(", ");
       titlesSplit = msg.split('$$$');
       console.log(titlesSplit);
 
@@ -86,22 +83,19 @@ const ChatGptPlugin = (props: Props) => {
       setLoadingTitle(false);
       setShowTopic(2);
     }
-    //return true;
   }
 
   const handleGenerateArticle = async (title: string) => {
     setLoadingArticle(true);
 
     const articlePrompt = `Write an ingress and a body for the following article titled ${title}.
-      Prefix each section (Title, Ingress and Body) with a triple $ mark.`
-    const articleResponse = `$$$Title: '...'\n $$$Ingress: ...\n $$$Body: ...`
+      Return the article ONLY in JSON format with three elements: title, ingress and body."`
     const articleSystem = `Your job is to write an article based on the title you receive. You write in a tabloid and engaging style desperate to captivate the reader.`
 
     // API prompt for titles
     openai.createChatCompletion({
       messages: [
       {role: 'user', content: articlePrompt},
-      {role: 'assistant', content: articleResponse},
       {role: 'system', content: articleSystem}
       ],
       model: 'gpt-3.5-turbo-0301',
@@ -116,32 +110,23 @@ const ChatGptPlugin = (props: Props) => {
     .catch(error => console.error(error));
 
     const getArticle = async (msg) => {
-      const removeLines = msg.replace("\n","");
-      const article = removeLines.split("$$$");
-      console.log(article);
-      const ingress = article[2];
-      const body = article[3];
-      console.log(title);
-      const cleanIngress = ingress.split('Ingress:').pop().split('Body')[0];
-      const cleanBody = body.split('Body:').pop();
+      let title = msg.split(`\"title\": \"`).pop().split(`\",\n`)[0];
+      let ingress = msg.split(`"ingress\": \"`).pop().split(`\",\n`)[0];
+      let body = msg.split(`"body\": \"`).pop().split(`\" \n}`)[0].replace(/\\n/g, '\n').split(`\"\n}`)[0];
 
-      /*
-      for (let i = 1; i < articles.length; i++){
-        if ((i-2)%3 == 0) { ingresses.push(articles[i]); console.log(articles[i]) }
-        if (i%3 == 0) { bodies.push(articles[i]); console.log(articles[i])}
-      }*/
+      console.log("TITTEL: " + title);
+      console.log("INGRESS: " + ingress);
+      console.log("BODY: " + body);
       
-      console.log(article);
       setTitle(title);
-      setIngress(cleanIngress);
-      setBody(cleanBody);
+      setIngress(ingress);
+      setBody(body);
       setLoadingArticle(false);
       setShowTopic(3);
     }
   }
 
   const handleSaveArticle = async () => {
-    
     setSavingArticle(true);  
     const queryPrompt = `Suggest two keywords based on the following ingress: '${ingress}'. Your response should only consist of those two words encapsulated within the same double quotes.`
     const queryAssistant =  `"keyword1 keyword2"`;
@@ -166,61 +151,77 @@ const ChatGptPlugin = (props: Props) => {
   }
 
   useEffect(() => {
-
     if (query === '') return;
+    let mutations;
 
     (async () => {
       console.log(query);
-      const asset = (await uploadUnsplashImage(query)).asset;
-      const caption = (await uploadUnsplashImage(query)).caption;
-      console.log(caption);
-      console.log(asset.description);
-      setQuery('');
+      const unsplashResponse = (await uploadUnsplashImage(query));
+      console.log(unsplashResponse);
+      
+      if (unsplashResponse !== null){
+        const asset = unsplashResponse.asset;
+        const caption = unsplashResponse.caption;
+        console.log(caption);
+        console.log(asset.description);
+        setQuery('');
 
-      const mutations = [{
-        create: {
-          _id: 'drafts.',
-          _type: 'article',
-          title: title,
-          ingress: ingress,
-          body: body,
-          image: {
-            _type: 'image',
-            asset: {
-              _type: 'reference',
-              _ref: asset._id,
-            },
-            caption: caption,
-            description: asset.description,
+        mutations = [{
+          create: {
+            _id: 'drafts.',
+            _type: 'article',
+            title: title,
+            ingress: ingress,
+            body: body,
+            image: {
+              _type: 'image',
+              asset: {
+                _type: 'reference',
+                _ref: asset._id,
+              },
+              caption: caption,
+              description: asset.description,
+            }
           }
-        }
-      }]
+        }]
+      }
 
-  fetch(`https://${projectId}.api.sanity.io/v${currentDate}/data/mutate/${dataset}`, {
-    method: 'post',
-    headers: {
-      'Content-type': 'application/json',
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({mutations})
-  })
-  .then(response => {
-    setTitle('');
-    setIngress('');
-    setBody('');
-    setSavingArticle(false);
-    return response.json();
-  })
-  .then(result => {
-    setTransactionId(result.transactionId);
-    console.log('Transaction ID: ' + result.transactionId)
-  })
-  .catch(error => console.error(error))
+      else{
+        setQuery('');
 
-  console.log('Unsplash image asset: ', asset);
-})();
-}
-, [query]);
+        mutations = [{
+          create: {
+            _id: 'drafts.',
+            _type: 'article',
+            title: title,
+            ingress: ingress,
+            body: body,
+          }
+        }]
+      }
+
+      fetch(`https://${sanityProjectId}.api.sanity.io/v${currentDate}/data/mutate/${sanityDataset}`, {
+        method: 'post',
+        headers: {
+          'Content-type': 'application/json',
+          Authorization: `Bearer ${sanityToken}`
+        },
+        body: JSON.stringify({mutations})
+      })
+      .then(response => {
+        setTitle('');
+        setIngress('');
+        setBody('');
+        setSavingArticle(false);
+        return response.json();
+      })
+      .then(result => {
+        setTransactionId(result.transactionId);
+        console.log('Transaction ID: ' + result.transactionId)
+      })
+      .catch(error => console.error(error))
+    })();
+  }, [query]);
 
 if (transactionId !== null){
 const idQuery = '*[_type == "article"] | order(_createdAt desc) [0]';
@@ -228,7 +229,7 @@ setTransactionId(null);
 
 // Fetch last created document 
 fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
-  headers: { Authorization: `Bearer ${token}` }
+  headers: { Authorization: `Bearer ${sanityToken}` }
 })
   .then(response => response.json())
   .then(data => {
