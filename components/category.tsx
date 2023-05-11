@@ -7,7 +7,7 @@ const sanityProjectId = `${process.env.SANITY_STUDIO_PROJECT_ID}`;
 const sanityDataset = `${process.env.SANITY_STUDIO_DATASET}`;
 const sanityToken = `${process.env.SANITY_STUDIO_WRITE_ACCESS}`;
 //const token = 'sk8ANkrJ9EthuQbUNvXDbw4tgdWZQW1TM2VVJgkqZZL5Ck78KE3jyGPQQ7NGnNxo6uhbihb9nlNcR1JNWc7Ob3ThmxelcnUesXO2rzu88NvBvMy7yLbQSclYGrBJt195jT8XqhmgJ4lRf2rwXwop6axseITxTZwELrDeyo4cpboFdMH5VJZO';
-const apiUrl = `https://${projectId}.api.sanity.io/v1/data/query/${dataset}`;
+const apiUrl = `https://${sanityProjectId}.api.sanity.io/v1/data/query/${sanityDataset}`;
 interface Props {
   onClose: () => void;
 }
