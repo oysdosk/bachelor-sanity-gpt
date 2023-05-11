@@ -3,9 +3,9 @@ import { Box, Button, Card,  TextArea, Flex, Text, Radio, Label, Stack } from '@
 import { Configuration, OpenAIApi } from "openai";
 import uploadUnsplashImage from './unsplash/uploadUnsplashImage.mjs';
 
-const projectId = '9mm9d4oe';
-const dataset = 'production';
-const token = 'skJ78olbMh27rRg2cxOeeG1iyTPzukQiLhbcb99svE685auLmN1MgYb76uJUQFd3lQx99jKssgNoROjh8Gr1AGr7tGwQnYX718zYaEn3vHnYlmINT3AGr3DqszpQ4clmJb5j8MRDSjhVeZRKidQ1vnq5xDwaHekwCtYt5eS6d6iXA2mGYtEA'
+const sanityProjectId = `${process.env.SANITY_STUDIO_PROJECT_ID}`;
+const sanityDataset = `${process.env.SANITY_STUDIO_DATASET}`;
+const sanityToken = `${process.env.SANITY_STUDIO_WRITE_ACCESS}`;
 //const token = 'sk8ANkrJ9EthuQbUNvXDbw4tgdWZQW1TM2VVJgkqZZL5Ck78KE3jyGPQQ7NGnNxo6uhbihb9nlNcR1JNWc7Ob3ThmxelcnUesXO2rzu88NvBvMy7yLbQSclYGrBJt195jT8XqhmgJ4lRf2rwXwop6axseITxTZwELrDeyo4cpboFdMH5VJZO';
 const apiUrl = `https://${projectId}.api.sanity.io/v1/data/query/${dataset}`;
 interface Props {
@@ -15,8 +15,8 @@ interface Props {
 const ChatGptPlugin = (props: Props) => {
   // API config
   const configuration = new Configuration({
-    organization: 'org-TyXgxHtVwqteKe1cU3VSaW0E',
-    apiKey: "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",   
+    organization: `${process.env.SANITY_STUDIO_OPENAI_ORG_ID}`,
+    apiKey: `${process.env.SANITY_STUDIO_OPENAI_API_KEY}`,   
   });
   const openai = new OpenAIApi(configuration);
 
@@ -184,11 +184,11 @@ const ChatGptPlugin = (props: Props) => {
         }
       }]
 
-  fetch(`https://${projectId}.api.sanity.io/v${currentDate}/data/mutate/${dataset}`, {
+  fetch(`https://${sanityProjectId}.api.sanity.io/v${currentDate}/data/mutate/${sanityDataset}`, {
     method: 'post',
     headers: {
       'Content-type': 'application/json',
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${sanityToken}`
     },
     body: JSON.stringify({mutations})
   })
@@ -216,7 +216,7 @@ setTransactionId(null);
 
 // Fetch last created document 
 fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
-  headers: { Authorization: `Bearer ${token}` }
+  headers: { Authorization: `Bearer ${sanityToken}` }
 })
   .then(response => response.json())
   .then(data => {
