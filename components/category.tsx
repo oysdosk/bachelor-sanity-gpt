@@ -6,7 +6,6 @@ import uploadUnsplashImage from './unsplash/uploadUnsplashImage.mjs';
 const sanityProjectId = `${process.env.SANITY_STUDIO_PROJECT_ID}`;
 const sanityDataset = `${process.env.SANITY_STUDIO_DATASET}`;
 const sanityToken = `${process.env.SANITY_STUDIO_WRITE_ACCESS}`;
-//const token = 'sk8ANkrJ9EthuQbUNvXDbw4tgdWZQW1TM2VVJgkqZZL5Ck78KE3jyGPQQ7NGnNxo6uhbihb9nlNcR1JNWc7Ob3ThmxelcnUesXO2rzu88NvBvMy7yLbQSclYGrBJt195jT8XqhmgJ4lRf2rwXwop6axseITxTZwELrDeyo4cpboFdMH5VJZO';
 const apiUrl = `https://${sanityProjectId}.api.sanity.io/v1/data/query/${sanityDataset}`;
 interface Props {
   onClose: () => void;
@@ -128,7 +127,6 @@ const ChatGptPlugin = (props: Props) => {
   }
 
   const handleSaveArticle = async () => {
-    
     setSavingArticle(true);  
     const queryPrompt = `Suggest a single keyword based on the following ingress: '${ingress}'. Your response should only consist of that one word encapsulated within double quotes.
     If the ingress is about a person or a place, make sure to use that person or place as the keyword.`
@@ -154,61 +152,77 @@ const ChatGptPlugin = (props: Props) => {
   }
 
   useEffect(() => {
-
     if (query === '') return;
+    let mutations;
 
     (async () => {
       console.log(query);
-      const asset = (await uploadUnsplashImage(query)).asset;
-      const caption = (await uploadUnsplashImage(query)).caption;
-      console.log(caption);
-      console.log(asset.description);
-      setQuery('');
+      const unsplashResponse = (await uploadUnsplashImage(query));
+      console.log(unsplashResponse);
+      
+      if (unsplashResponse !== null){
+        const asset = unsplashResponse.asset;
+        const caption = unsplashResponse.caption;
+        console.log(caption);
+        console.log(asset.description);
+        setQuery('');
 
-      const mutations = [{
-        create: {
-          _id: 'drafts.',
-          _type: 'article',
-          title: title,
-          ingress: ingress,
-          body: body,
-          image: {
-            _type: 'image',
-            asset: {
-              _type: 'reference',
-              _ref: asset._id,
-            },
-            caption: caption,
-            description: asset.description,
+        mutations = [{
+          create: {
+            _id: 'drafts.',
+            _type: 'article',
+            title: title,
+            ingress: ingress,
+            body: body,
+            image: {
+              _type: 'image',
+              asset: {
+                _type: 'reference',
+                _ref: asset._id,
+              },
+              caption: caption,
+              description: asset.description,
+            }
           }
-        }
-      }]
+        }]
+      }
 
-  fetch(`https://${sanityProjectId}.api.sanity.io/v${currentDate}/data/mutate/${sanityDataset}`, {
-    method: 'post',
-    headers: {
-      'Content-type': 'application/json',
-      Authorization: `Bearer ${sanityToken}`
-    },
-    body: JSON.stringify({mutations})
-  })
-  .then(response => {
-    setTitle('');
-    setIngress('');
-    setBody('');
-    setSavingArticle(false);
-    return response.json();
-  })
-  .then(result => {
-    setTransactionId(result.transactionId);
-    console.log('Transaction ID: ' + result.transactionId)
-  })
-  .catch(error => console.error(error))
+      else{
+        setQuery('');
 
-  console.log('Unsplash image asset: ', asset);
-})();
-}
-, [query]);
+        mutations = [{
+          create: {
+            _id: 'drafts.',
+            _type: 'article',
+            title: title,
+            ingress: ingress,
+            body: body,
+          }
+        }]
+      }
+
+      fetch(`https://${sanityProjectId}.api.sanity.io/v${currentDate}/data/mutate/${sanityDataset}`, {
+        method: 'post',
+        headers: {
+          'Content-type': 'application/json',
+          Authorization: `Bearer ${sanityToken}`
+        },
+        body: JSON.stringify({mutations})
+      })
+      .then(response => {
+        setTitle('');
+        setIngress('');
+        setBody('');
+        setSavingArticle(false);
+        return response.json();
+      })
+      .then(result => {
+        setTransactionId(result.transactionId);
+        console.log('Transaction ID: ' + result.transactionId)
+      })
+      .catch(error => console.error(error))
+    })();
+  }, [query]);
 
 if (transactionId !== null){
 const idQuery = '*[_type == "article"] | order(_createdAt desc) [0]';
@@ -223,7 +237,7 @@ fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
     const articleId = data.result._id;
     console.log('Article ID: ' + articleId);
     console.log(`http://localhost:3333/desk/article;${articleId}`);
-    window.location.href = `http://localhost:3333/desk/article;${articleId}`
+    //window.location.href = `http://localhost:3333/desk/article;${articleId}`
   })
   .catch(error => console.error(error));
 }

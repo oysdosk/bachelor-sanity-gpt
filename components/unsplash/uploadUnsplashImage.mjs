@@ -31,7 +31,8 @@ async function uploadUnsplashImage(query) {
     const unsplashData = await unsplashResponse.json();
 
     if (unsplashData.results.length === 0) {
-      throw new Error('No images found for the given query');
+      console.log(new Error('No images found for the given query'));
+      return null;
     }
 
     const imageUrl = unsplashData.results[0].urls.regular;
@@ -52,6 +53,7 @@ async function uploadUnsplashImage(query) {
       asset: asset,
       caption: caption
     }
+
   } 
   catch (error) {
     console.error('Error uploading Unsplash image:', error);

@@ -16,7 +16,6 @@ const chatGptTool = () => {
   }
 }
 
-
 export default defineConfig({
   name: 'default',
   title: 'Sanity',
