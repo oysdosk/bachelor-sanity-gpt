@@ -89,7 +89,7 @@ const ChatGptPlugin = (props: Props) => {
     setLoadingArticle(true);
 
     const articlePrompt = `Write an ingress and a body for the following article titled ${title}.
-      Return the article ONLY in JSON format with three elements: title, ingress and body."`
+      Return the article ONLY in JSON format with three elements: title, ingress and body. Do not add children elements inside any of the elements"`
     const articleSystem = `Your job is to write an article based on the title you receive. You write in a tabloid and engaging style desperate to captivate the reader.`
 
     // API prompt for titles
