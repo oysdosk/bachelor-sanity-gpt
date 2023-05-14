@@ -20,8 +20,8 @@ export default defineConfig({
   name: 'default',
   title: 'Sanity',
 
-  projectId: '9mm9d4oe',
-  dataset: 'production',
+  projectId: `${process.env.SANITY_STUDIO_PROJECT_ID}`,
+  dataset: `${process.env.SANITY_STUDIO_DATASET}`,
 
   plugins: [
     deskTool(),
