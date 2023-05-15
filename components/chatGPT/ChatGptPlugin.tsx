@@ -1,21 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, Card,  TextArea, Flex, Text, Radio, Label, Stack, } from '@sanity/ui';
+import { createClient } from '@sanity/client';
 import { Configuration, OpenAIApi } from "openai";
 import * as literal from './literalConstants';
-import uploadUnsplashImage from './unsplash/uploadUnsplashImage.mjs';
+import uploadUnsplashImage from '../unsplash/uploadUnsplashImage.mjs';
 import Spinner from './spinner.jsx';
 
+// Environment variables
 const sanityProjectId = `${process.env.SANITY_STUDIO_PROJECT_ID}`;
 const sanityDataset = `${process.env.SANITY_STUDIO_DATASET}`;
 const sanityToken = `${process.env.SANITY_STUDIO_WRITE_ACCESS}`;
 const apiUrl = `https://${sanityProjectId}.api.sanity.io/v1/data/query/${sanityDataset}`;
-interface Props {
-  onClose: () => void;
-}
 
-const ChatGptPlugin = (props: Props) => {
+// Sanity Client
+const client = createClient({
+  projectId: `${process.env.SANITY_STUDIO_PROJECT_ID}`,
+  dataset: `${process.env.SANITY_STUDIO_DATASET}`,
+  apiVersion: new Date().toISOString().split('T')[0],
+  token: `${process.env.SANITY_STUDIO_WRITE_ACCESS}`, 
+  useCdn: false,
+});
+
+const ChatGptPlugin = () => {
   
-  // API config
+  // OpenAI API config
   const configuration = new Configuration({
     organization: `${process.env.SANITY_STUDIO_OPENAI_ORG_ID}`,
     apiKey: `${process.env.SANITY_STUDIO_OPENAI_API_KEY}`,   
@@ -23,27 +31,33 @@ const ChatGptPlugin = (props: Props) => {
   const openai = new OpenAIApi(configuration);
 
   // React hooks to hold values
-  const [loadingTitle, setLoadingTitle] = useState(false);
-  const [loadingArticle, setLoadingArticle] = useState(false);
-  const [savingArticle, setSavingArticle] = useState(false);
+  
   const [showTopic, setShowTopic] = useState(1);
   const [inTopic, setInTopic] = useState('');
   const [inTitle, setInTitle] = useState('');
+
+  const [radio, setRadio] = useState('');
+  const [titles, setTitles] = useState(['', '', '','','']);
   const [articleResponse, setArticleResponse] = useState('');
+
   const [title, setTitle] = useState('');
   const [ingress, setIngress] = useState('');
   const [body, setBody] = useState('');
-  const [radio, setRadio] = useState('');
-  const [query, setQuery] = useState('');
+  const [unsplashQuery, setUnsplashQuery] = useState('');
   const [transactionId, setTransactionId] = useState(null);
+  
+  const [loadingTitle, setLoadingTitle] = useState(false);
+  const [loadingArticle, setLoadingArticle] = useState(false);
+  const [savingArticle, setSavingArticle] = useState(false);
+
   const [jsonError, setJsonError] = useState(false);
   const [openAiError, setOpenAiError] = useState(false);
-
-  let titlesSplit = Array(5);
-  const [titles, setTitles] = useState(['', '', '','','']);
+  const [saveArticleError, setSaveArticleError] = useState(false);
+  
+  
   const currentDate = new Date().toISOString().split('T')[0];
 
-  const handleChange = (event) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRadio(event.currentTarget.value);
   };
 
@@ -68,9 +82,8 @@ const ChatGptPlugin = (props: Props) => {
     .then(response => {
       console.log(response);
       const res = response.data.choices[0].message?.content || '';
-      console.log(res);
-      try{
-        let responseObject = JSON.parse(res);
+      try {
+      let responseObject = JSON.parse(res);
       setTitles(Object.values(responseObject));
       setLoadingTitle(false);
       setShowTopic(2);
@@ -86,13 +99,13 @@ const ChatGptPlugin = (props: Props) => {
       setOpenAiError(true);
       setLoadingTitle(false);
       console.error(error);
-    });
-      
+    });  
   }
 
   const handleGenerateArticle = async (title: string) => {
     setLoadingArticle(true);
     setJsonError(false);
+    setOpenAiError(false);
     setIngress('');
     setBody('');
     setRadio('');
@@ -100,8 +113,8 @@ const ChatGptPlugin = (props: Props) => {
     // API prompt for article generation
     openai.createChatCompletion({
       messages: [
-      //{role: 'user', content: literal.articlePrompt(title)},
-      //{role: 'assistant', content: literal.articleAssistant},
+      {role: 'user', content: literal.articlePrompt(title)},
+      {role: 'assistant', content: literal.articleAssistant},
       {role: 'user', content: literal.articlePrompt(title)},
       {role: 'system', content: literal.articleSystem}
       ],
@@ -112,7 +125,6 @@ const ChatGptPlugin = (props: Props) => {
     .then(response => {
       console.log(response)
       const res = response.data.choices[0].message?.content || '';
-      console.log(res);
       setArticleResponse(res);
     })
     .catch(error => console.error(error));
@@ -120,43 +132,43 @@ const ChatGptPlugin = (props: Props) => {
 
   const handleSaveArticle = async () => {
     setSavingArticle(true);  
-    const queryPrompt = `Suggest two keywords based on the following ingress: '${ingress}'. Your response should only consist of those two words encapsulated within the same double quotes.`
-    const queryAssistant =  `"keyword1 keyword2"`;
+    setSaveArticleError(false);
     
     // API prompt for Unsplash query
     openai.createChatCompletion({
       messages: [
-       {role: 'user', content: queryPrompt},
-       {role: 'assistant', content: queryAssistant }
+       {role: 'user', content: literal.unsplashPrompt(ingress)},
+       {role: 'assistant', content: literal.unsplashAssistant}
       ],
       model: 'gpt-3.5-turbo-0301',
-      temperature: 0.8,
-      max_tokens: 128,
+      temperature: 0.3,
+      max_tokens: 16,
     })
     .then(response => {
-      console.log(response);
       const res = response.data.choices[0].message?.content;
-      console.log(res);
-      if (res != undefined) setQuery(res);
+      console.log(response);
+      if (res !== undefined) setUnsplashQuery(res);
     })
     .catch(error => console.error(error));
   }
 
+  // State function for saving article after getting Unsplash keywords from ChatGPT
   useEffect(() => {
-    if (query === '') return;
+    if (unsplashQuery === '') return;
     let mutations;
 
     (async () => {
-      console.log(query);
-      const unsplashResponse = (await uploadUnsplashImage(query));
+      const unsplashResponse = (await uploadUnsplashImage(unsplashQuery));
+      console.log("Unsplash query: " + unsplashQuery);
       console.log(unsplashResponse);
       
-      if (unsplashResponse !== null){
+      // Case: successfully retrieved image from Unsplash
+      if (unsplashResponse !== null) {
         const asset = unsplashResponse.asset;
         const caption = unsplashResponse.caption;
-        console.log(caption);
-        console.log(asset.description);
-        setQuery('');
+        console.log("Unsplash caption: " + caption);
+        console.log("Unsplash description: " + asset.description);
+        //setUnsplashQuery('');
 
         mutations = [{
           create: {
@@ -178,8 +190,9 @@ const ChatGptPlugin = (props: Props) => {
         }]
       }
 
+      // Case: no image from Unsplash
       else{
-        setQuery('');
+        setUnsplashQuery('');
 
         mutations = [{
           create: {
@@ -192,6 +205,7 @@ const ChatGptPlugin = (props: Props) => {
         }]
       }
 
+      // Saving article
       fetch(`https://${sanityProjectId}.api.sanity.io/v${currentDate}/data/mutate/${sanityDataset}`, {
         method: 'post',
         headers: {
@@ -204,62 +218,83 @@ const ChatGptPlugin = (props: Props) => {
         setTitle('');
         setIngress('');
         setBody('');
+        setUnsplashQuery('');
         setSavingArticle(false);
         return response.json();
       })
       .then(result => {
         setTransactionId(result.transactionId);
-        console.log('Transaction ID: ' + result.transactionId)
+        console.log('Transaction ID: ' + result.transactionId);
       })
-      .catch(error => console.error(error))
+      .catch(error => {
+        console.error(error);
+
+        // Delete last uploaded image if unable to save article
+        client.fetch(literal.imgIdQuery)
+          .then(imageAsset => {
+            client.delete(imageAsset._id)
+              .then(res => {
+                console.log('Image asset deleted', res)
+              })
+              .catch(err => {
+                console.log('Error deleting image asset', err)
+              })
+          })
+          .catch(err => {
+            console.log('Error fetching image asset', err)
+          })
+
+        setUnsplashQuery('');
+        setSaveArticleError(true);
+        setSavingArticle(false);
+      });
+
     })();
-  }, [query]);
+  }, [unsplashQuery]);
 
-if (transactionId !== null){
-const idQuery = '*[_type == "article"] | order(_createdAt desc) [0]';
-setTransactionId(null);
+  // Access and redirect to the last created article
+  if (transactionId !== null){
+    setTransactionId(null);
 
-// Fetch last created document 
-fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
-  headers: { Authorization: `Bearer ${sanityToken}` }
-})
-  .then(response => response.json())
-  .then(data => {
-    const articleId = data.result._id;
-    console.log('Article ID: ' + articleId);
-    console.log(`http://localhost:3333/desk/article;${articleId}`);
-    window.location.href = `http://localhost:3333/desk/article;${articleId}`
-  })
-  .catch(error => console.error(error));
-}
-
-// UseEffect for a complete article response from OpenAI API
-useEffect(() => {
-  if (articleResponse === '') return;
-  setLoadingArticle(false);
-
-  console.log(articleResponse);
-  try{
-    setJsonError(false);
-    let responseObject = JSON.parse(articleResponse);
-    let title = responseObject.title;
-    let ingress = responseObject.ingress;
-    let body = responseObject.body;
-  
-    setTitle(title);
-    setIngress(ingress);
-    setBody(body);
-
-    setShowTopic(3);
+    client.fetch(literal.docIdQuery)
+      .then(data => {
+        const articleId = data._id;
+        console.log('Article ID: ' + articleId);
+        console.log(`http://localhost:3333/desk/article;${articleId}`);
+        window.location.href = `http://localhost:3333/desk/article;${articleId}`
+      })
+    .catch(error => console.error(error));
   }
-  catch (error) {
-    console.error('Unable to parse JSON object.', error);
-    setJsonError(true);
-    setIngress('');
-    setBody('');
+
+  // UseEffect for a complete article response from OpenAI API
+  useEffect(() => {
+    if (articleResponse === '') return;
+    setLoadingArticle(false);
+
+    console.log(articleResponse);
+    try{
+      setJsonError(false);
+      let responseObject = JSON.parse(articleResponse);
+      let title = responseObject.title;
+      let ingress = responseObject.ingress;
+
+      let paragraphs = responseObject.body.map((item: { paragraph: any; }) => item.paragraph);
+      let body = paragraphs.join('\n\n');
+    
+      setTitle(title);
+      setIngress(ingress);
+      setBody(body);
+
+      setShowTopic(3);
+    }
+    catch (error) {
+      console.error('Unable to parse JSON object.', error);
+      setJsonError(true);
+      setIngress('');
+      setBody('');
+    }
   }
-}
-, [articleResponse]);
+  , [articleResponse]);
 
   return (
   <Box id="container" sizing={'content'}>
@@ -307,10 +342,8 @@ useEffect(() => {
         />
       </Card>
       <Card padding={4}>
-        <Button disabled={loadingTitle || loadingArticle || inTitle === ''}
-        onClick={
-          (e:any) => handleGenerateArticle(inTitle)
-        }
+        <Button disabled={loadingTitle || loadingArticle || inTitle === ''} 
+          onClick={(e:any) => handleGenerateArticle(inTitle)}
           fontSize={[2, 2, 3]}
           mode="ghost"
           padding={[3, 3, 4]}
@@ -405,11 +438,6 @@ useEffect(() => {
           </Box>
         </Flex>
       </Card>
-      {loadingTitle ? (
-        <Card paddingBottom={4} paddingLeft={4}>
-          <Spinner/>
-        </Card>
-      ) : null}
       <Card padding={4}>
         <Button disabled={loadingTitle || loadingArticle} onClick={handleGenerateTitles}
           fontSize={[2, 2, 3]}
@@ -419,6 +447,12 @@ useEffect(() => {
           text="Try again"
         />
       </Card>
+      {loadingTitle ? (
+        <Card paddingBottom={4} paddingLeft={4}>
+          <Spinner/>
+          {loadingTitle && <h3>Loading titles...</h3>}
+        </Card>
+      ) : null}
       <Card padding={4}>
         <Button disabled={loadingTitle || loadingArticle || radio === ''} onClick={(e:any) => handleGenerateArticle(radio)}
           fontSize={[2, 2, 3]}
@@ -431,13 +465,12 @@ useEffect(() => {
       {loadingArticle ? (
         <Card paddingBottom={4} paddingLeft={4}>
           <Spinner/>
+          {loadingArticle && <h3>Loading article...</h3>}
         </Card>
       ) : null}
       <Card padding={4}>
         {jsonError && <h2>{literal.jsonError}</h2>}
         {openAiError && <h2>{literal.openAiError}</h2>}
-        {loadingTitle && <h3>Loading titles...</h3>}
-        {loadingArticle && <h3>Loading article...</h3>}
       </Card>
     </Box>
     <Stack padding={4} space={[5,5,5,5]} style={{ display : showTopic==3 ? "block" : "none" }}>
@@ -484,7 +517,7 @@ useEffect(() => {
       </Card>
       {loadingArticle ? (
         <Card paddingBottom={4} paddingLeft={4}>
-        <Spinner/>
+          <Spinner/>
         </Card>
       ) : null}
       <Card paddingBottom={4} paddingLeft={4}>
@@ -517,10 +550,16 @@ useEffect(() => {
           text="Save article"
         />
       </Card>
+      {savingArticle ? (
+        <Card paddingBottom={4} paddingLeft={4}>
+          <Spinner/>
+          {savingArticle && <h3>Saving article...</h3>}
+        </Card>
+      ) : null}
       <Card paddingBottom={4} paddingLeft={4}>
         {jsonError && <h2>{literal.jsonError}</h2>}
         {openAiError && <h2>{literal.openAiError}</h2>}
-        {savingArticle && <h3>Saving article...</h3>}
+        {saveArticleError && <h3>{literal.saveArticleError}</h3>} 
         {loadingArticle && <h3>Loading article...</h3>}
       </Card>
     </Stack>

@@ -1,4 +1,4 @@
-import {defineField, defineType} from 'sanity';
+import {defineField, defineType, Rule} from 'sanity';
 
 export default defineType({
     name: 'article',
@@ -42,6 +42,7 @@ export default defineType({
         title: 'Author',
         type: 'reference',
         to: {type: 'author'},
+        validation: Rule => Rule.required().error('An author is required before publishing.')
       }),
       defineField({
         name: 'publishedAt',

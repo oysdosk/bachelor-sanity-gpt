@@ -38,9 +38,7 @@ async function uploadUnsplashImage(query) {
     const imageUrl = unsplashData.results[0].urls.regular;
     const imageId = unsplashData.results[0].id;
     const caption = 'Photo by ' + unsplashData.results[0].user.name;
-    console.log(caption);
     const description = unsplashData.results[0].description;
-    console.log(description);
     
     const imageData = await downloadImageAsBuffer(imageUrl);
 
