@@ -1,7 +1,9 @@
-import React, { useState, useCallback, useEffect } from 'react';
-import { Box, Button, Card,  TextArea, Flex, Text, Radio, Label, Stack } from '@sanity/ui';
+import React, { useState, useEffect } from 'react';
+import { Box, Button, Card,  TextArea, Flex, Text, Radio, Label, Stack, } from '@sanity/ui';
 import { Configuration, OpenAIApi } from "openai";
+import * as literal from './literalConstants';
 import uploadUnsplashImage from './unsplash/uploadUnsplashImage.mjs';
+import Spinner from './spinner.jsx';
 
 const sanityProjectId = `${process.env.SANITY_STUDIO_PROJECT_ID}`;
 const sanityDataset = `${process.env.SANITY_STUDIO_DATASET}`;
@@ -24,79 +26,79 @@ const ChatGptPlugin = (props: Props) => {
   const [loadingArticle, setLoadingArticle] = useState(false);
   const [savingArticle, setSavingArticle] = useState(false);
   const [showTopic, setShowTopic] = useState(1);
-  const [prompt, setPrompt] = useState('');
-  const [inputTitle, setInputTitle] = useState('');
+  const [inTopic, setInTopic] = useState('');
+  const [inTitle, setInTitle] = useState('');
+  const [articleResponse, setArticleResponse] = useState('');
   const [title, setTitle] = useState('');
   const [ingress, setIngress] = useState('');
   const [body, setBody] = useState('');
   const [radio, setRadio] = useState('');
   const [query, setQuery] = useState('');
   const [transactionId, setTransactionId] = useState(null);
+  const [jsonError, setJsonError] = useState(false);
+  const [openAiError, setOpenAiError] = useState(false);
+
+  let titlesSplit = Array(5);
+  const [titles, setTitles] = useState(['', '', '','','']);
+  const currentDate = new Date().toISOString().split('T')[0];
 
   const handleChange = (event) => {
     setRadio(event.currentTarget.value);
   };
 
-  let titlesSplit = Array(5);
-  const currentDate = new Date().toISOString().split('T')[0];
-  
-  const [titles, setTitles] = useState(['', '', '','','']);
-
   const handleGenerateTitles = async () => {
     setLoadingTitle(true);
+    setJsonError(false);
+    setOpenAiError(false);
   
-    const titlePrompt = `Suggest five titles for an article about ${prompt}. Separate each title only by a triple $ mark and a space. Important: Do not use any quotation marks around the titles.`
-    const titleAssistant =  `Example: $$$Title1 $$$Title2 $$$Title3 $$$Title4 $$$Title5`;
-    const titleSystem = `You are a news editor looking for captivating titles for your articles. Your purpose here is to only answer with titles. Important: Do not use any quotation marks around the titles.`
-    
     // API prompt for titles
     openai.createChatCompletion({
       messages: [
-       {role: 'user', content: titlePrompt},
-       {role: 'assistant', content: titleAssistant },
-       {role: 'user', content: titlePrompt},
-       {role: 'system', content: titleSystem},
+       {role: 'user', content: literal.titlePrompt(inTopic)},
+       {role: 'assistant', content: literal.titleAssistant},
+       {role: 'user', content: literal.titlePrompt(inTopic)},
+       {role: 'system', content: literal.titleSystem},
       ],
       model: 'gpt-3.5-turbo-0301',
-      temperature: 0.8,
+      temperature: 0.9,
       max_tokens: 2048,
     })
     .then(response => {
-      console.log(response)
-      const res = response.data.choices[0].message?.content;
-      getTitles(res);
-    })
-    .catch(error => console.error(error));
-
-    const getTitles = (msg) => {
-      titlesSplit = msg.split('$$$');
-      console.log(titlesSplit);
-
-      const newTitles = titles.map((t,  i) => {
-        t = titlesSplit[i+1];
-        console.log(t);
-        return t;
-      }); 
-
-      setTitles(newTitles);
-      
+      console.log(response);
+      const res = response.data.choices[0].message?.content || '';
+      console.log(res);
+      try{
+        let responseObject = JSON.parse(res);
+      setTitles(Object.values(responseObject));
       setLoadingTitle(false);
       setShowTopic(2);
-    }
+      }
+      catch (error) {
+        console.error('Unable to parse JSON object.', error);
+        setJsonError(true);
+        console.error(error);
+      }
+    })
+    .catch(error => {
+      setOpenAiError(true);
+      console.error(error);
+    });
+      
   }
 
   const handleGenerateArticle = async (title: string) => {
     setLoadingArticle(true);
+    setJsonError(false);
+    setIngress('');
+    setBody('');
 
-    const articlePrompt = `Write an ingress and a body for the following article titled ${title}.
-      Return the article ONLY in JSON format with three elements: title, ingress and body. Do not add children elements inside any of the elements"`
-    const articleSystem = `Your job is to write an article based on the title you receive. You write in a tabloid and engaging style desperate to captivate the reader.`
-
-    // API prompt for titles
+    // API prompt for article generation
     openai.createChatCompletion({
       messages: [
-      {role: 'user', content: articlePrompt},
-      {role: 'system', content: articleSystem}
+      //{role: 'user', content: literal.articlePrompt(title)},
+      //{role: 'assistant', content: literal.articleAssistant},
+      {role: 'user', content: literal.articlePrompt(title)},
+      {role: 'system', content: literal.articleSystem}
       ],
       model: 'gpt-3.5-turbo-0301',
       temperature: 0.8,
@@ -104,26 +106,11 @@ const ChatGptPlugin = (props: Props) => {
     })
     .then(response => {
       console.log(response)
-      const res = response.data.choices[0].message?.content;
-      getArticle(res);
+      const res = response.data.choices[0].message?.content || '';
+      console.log(res);
+      setArticleResponse(res);
     })
     .catch(error => console.error(error));
-
-    const getArticle = async (msg) => {
-      let title = msg.split(`\"title\": \"`).pop().split(`\",\n`)[0];
-      let ingress = msg.split(`"ingress\": \"`).pop().split(`\",\n`)[0];
-      let body = msg.split(`"body\": \"`).pop().split(`\" \n}`)[0].replace(/\\n/g, '\n').split(`\"\n}`)[0];
-
-      console.log("TITTEL: " + title);
-      console.log("INGRESS: " + ingress);
-      console.log("BODY: " + body);
-      
-      setTitle(title);
-      setIngress(ingress);
-      setBody(body);
-      setLoadingArticle(false);
-      setShowTopic(3);
-    }
   }
 
   const handleSaveArticle = async () => {
@@ -241,6 +228,34 @@ fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
   .catch(error => console.error(error));
 }
 
+// UseEffect for a complete article response from OpenAI API
+useEffect(() => {
+  if (articleResponse === '') return;
+  setLoadingArticle(false);
+
+  console.log(articleResponse);
+  try{
+    setJsonError(false);
+    let responseObject = JSON.parse(articleResponse);
+    let title = responseObject.title;
+    let ingress = responseObject.ingress;
+    let body = responseObject.body;
+  
+    setTitle(title);
+    setIngress(ingress);
+    setBody(body);
+
+    setShowTopic(3);
+  }
+  catch (error) {
+    console.error('Unable to parse JSON object.', error);
+    setJsonError(true);
+    setIngress('');
+    setBody('');
+  }
+}
+, [articleResponse]);
+
   return (
   <Box>
     <Box style={{ display : showTopic==1 ? "block" : "none" }}>
@@ -248,19 +263,24 @@ fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
         <Text size={4}>CHATGPT ARTICLE GENERATOR</Text>
       </Card>
       <Card padding={4}>
-        <TextArea id="inputTopic"
+        <TextArea id="inTopic"
           fontSize={[2, 2, 3, 3]}
           onChange={(event) =>
-            setPrompt(event.currentTarget.value)
+            setInTopic(event.currentTarget.value)
           }
           padding={[3, 3, 4]}
           radius={3}
           placeholder="Give me a topic ..."
-          value={prompt}
+          value={inTopic}
         />
       </Card>
+      {loadingTitle ? (
+        <Card paddingBottom={4} paddingLeft={4}>
+          <Spinner/>
+        </Card>
+      ) : null}
       <Card padding={4}>
-        <Button onClick={handleGenerateTitles}
+        <Button disabled={loadingTitle || loadingArticle} onClick={handleGenerateTitles}
           fontSize={[2, 2, 3]}
           mode="ghost"
           padding={[3, 3, 4]}
@@ -269,19 +289,22 @@ fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
           />
       </Card>
       <Card padding={4}>
-        <TextArea id="inputTitle"
+        <TextArea id="inTitle"
           fontSize={[2, 2, 3, 3]}
           onChange={(event) =>
-            setInputTitle(event.currentTarget.value)
+            setInTitle(event.currentTarget.value)
           }
           padding={[3, 3, 4]}
           radius={3}
           placeholder="Give me a title ..."
-          value={inputTitle}
+          value={inTitle}
         />
       </Card>
       <Card padding={4}>
-        <Button onClick={(e:any) => handleGenerateArticle(inputTitle)}
+        <Button disabled={loadingTitle || loadingArticle}
+        onClick={
+          (e:any) => handleGenerateArticle(inTitle)
+        }
           fontSize={[2, 2, 3]}
           mode="ghost"
           padding={[3, 3, 4]}
@@ -289,9 +312,16 @@ fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
           text="Create article"
           />
       </Card>
+      {loadingArticle ? (
+        <Card paddingBottom={4} paddingLeft={4}>
+          <Spinner/>
+        <h3>Loading article...</h3>
+        </Card>
+      ) : null}
+      <Card padding={4}></Card>
       <Card padding={4}>
-        {loadingTitle && <h3>Loading titles...</h3>}
-        {loadingArticle && <h3>Loading article...</h3>}
+        {jsonError && <h2>{literal.jsonError}</h2>}
+        {openAiError && <h2>{literal.openAiError}</h2>}
       </Card>
     </Box>
     <Box style={{ display : showTopic==2 ? "block" : "none" }}>
@@ -369,8 +399,13 @@ fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
           </Box>
         </Flex>
       </Card>
+      {loadingTitle ? (
+        <Card paddingBottom={4} paddingLeft={4}>
+          <Spinner/>
+        </Card>
+      ) : null}
       <Card padding={4}>
-        <Button onClick={handleGenerateTitles}
+        <Button disabled={loadingTitle || loadingArticle} onClick={handleGenerateTitles}
           fontSize={[2, 2, 3]}
           mode="ghost"
           padding={[3, 3, 4]}
@@ -379,7 +414,7 @@ fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
         />
       </Card>
       <Card padding={4}>
-        <Button onClick={(e:any) => handleGenerateArticle(radio)}
+        <Button disabled={loadingTitle || loadingArticle} onClick={(e:any) => handleGenerateArticle(radio)}
           fontSize={[2, 2, 3]}
           mode="ghost"
           padding={[3, 3, 4]}
@@ -387,7 +422,14 @@ fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
           text="Generate article"
         />
       </Card>
+      {loadingArticle ? (
+        <Card paddingBottom={4} paddingLeft={4}>
+          <Spinner/>
+        </Card>
+      ) : null}
       <Card padding={4}>
+        {jsonError && <h2>{literal.jsonError}</h2>}
+        {openAiError && <h2>{literal.openAiError}</h2>}
         {loadingTitle && <h3>Loading titles...</h3>}
         {loadingArticle && <h3>Loading article...</h3>}
       </Card>
@@ -414,6 +456,11 @@ fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
       <Card paddingBottom={4} paddingLeft={4}>
         <Label size={4}>Ingress</Label>
       </Card>
+      {loadingArticle ? (
+        <Card paddingBottom={4} paddingLeft={4}>
+          <Spinner/>
+        </Card>
+      ) : null}
       <Card paddingBottom={4} paddingLeft={4}>
         <TextArea id="ingress"
           fontSize={[2, 2, 3, 3]}
@@ -429,6 +476,11 @@ fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
       <Card paddingBottom={4} paddingLeft={4}>
         <Label size={4}>Body</Label>
       </Card>
+      {loadingArticle ? (
+        <Card paddingBottom={4} paddingLeft={4}>
+        <Spinner/>
+        </Card>
+      ) : null}
       <Card paddingBottom={4} paddingLeft={4}>
         <TextArea id="body"
           fontSize={[2, 2, 3, 3]}
@@ -442,7 +494,7 @@ fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
         />
       </Card>
       <Card padding={4}>
-      <Button onClick={(e:any) => handleGenerateArticle(radio)}
+      <Button disabled={loadingArticle || savingArticle} onClick={(e:any) => handleGenerateArticle(title)}
           fontSize={[2, 2, 3]}
           mode="ghost"
           padding={[3, 3, 4]}
@@ -451,7 +503,7 @@ fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
         />
       </Card>
       <Card padding={4}>
-        <Button onClick={(e:any) => handleSaveArticle()}
+        <Button disabled={loadingArticle || savingArticle} onClick={(e:any) => handleSaveArticle()}
           fontSize={[2, 2, 3]}
           mode="ghost"
           padding={[3, 3, 4]}
@@ -460,6 +512,8 @@ fetch(`${apiUrl}?query=${encodeURIComponent(idQuery)}`, {
         />
       </Card>
       <Card paddingBottom={4} paddingLeft={4}>
+        {jsonError && <h2>{literal.jsonError}</h2>}
+        {openAiError && <h2>{literal.openAiError}</h2>}
         {savingArticle && <h3>Saving article...</h3>}
         {loadingArticle && <h3>Loading article...</h3>}
       </Card>

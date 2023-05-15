@@ -15,6 +15,6 @@
     "jsx": "preserve",
     "incremental": true
   },
-  "include": ["**/*.ts", "**/*.tsx", "components/unsplash/unsplash.js"],
+  "include": ["**/*.ts", "**/*.tsx", "components/unsplash/unsplash.js", "components/spinner.jsx"],
   "exclude": ["node_modules"]
 }
