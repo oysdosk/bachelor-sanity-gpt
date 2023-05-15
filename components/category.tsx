@@ -14,6 +14,7 @@ interface Props {
 }
 
 const ChatGptPlugin = (props: Props) => {
+  
   // API config
   const configuration = new Configuration({
     organization: `${process.env.SANITY_STUDIO_OPENAI_ORG_ID}`,
@@ -50,6 +51,7 @@ const ChatGptPlugin = (props: Props) => {
     setLoadingTitle(true);
     setJsonError(false);
     setOpenAiError(false);
+    setRadio('');
   
     // API prompt for titles
     openai.createChatCompletion({
@@ -76,11 +78,13 @@ const ChatGptPlugin = (props: Props) => {
       catch (error) {
         console.error('Unable to parse JSON object.', error);
         setJsonError(true);
+        setLoadingTitle(false);
         console.error(error);
       }
     })
     .catch(error => {
       setOpenAiError(true);
+      setLoadingTitle(false);
       console.error(error);
     });
       
@@ -91,6 +95,7 @@ const ChatGptPlugin = (props: Props) => {
     setJsonError(false);
     setIngress('');
     setBody('');
+    setRadio('');
 
     // API prompt for article generation
     openai.createChatCompletion({
@@ -257,7 +262,7 @@ useEffect(() => {
 , [articleResponse]);
 
   return (
-  <Box>
+  <Box id="container" sizing={'content'}>
     <Box style={{ display : showTopic==1 ? "block" : "none" }}>
       <Card padding={4} margin={4} paddingBottom={0}>
         <Text size={4}>CHATGPT ARTICLE GENERATOR</Text>
@@ -274,13 +279,8 @@ useEffect(() => {
           value={inTopic}
         />
       </Card>
-      {loadingTitle ? (
-        <Card paddingBottom={4} paddingLeft={4}>
-          <Spinner/>
-        </Card>
-      ) : null}
       <Card padding={4}>
-        <Button disabled={loadingTitle || loadingArticle} onClick={handleGenerateTitles}
+        <Button disabled={loadingTitle || loadingArticle || inTopic === ''} onClick={handleGenerateTitles}
           fontSize={[2, 2, 3]}
           mode="ghost"
           padding={[3, 3, 4]}
@@ -288,6 +288,12 @@ useEffect(() => {
           text="Create titles"
           />
       </Card>
+      {loadingTitle ? (
+        <Card paddingBottom={4} paddingLeft={4}>
+          <Spinner/>
+          <h3>Loading titles...</h3>
+        </Card>
+      ) : null}
       <Card padding={4}>
         <TextArea id="inTitle"
           fontSize={[2, 2, 3, 3]}
@@ -301,7 +307,7 @@ useEffect(() => {
         />
       </Card>
       <Card padding={4}>
-        <Button disabled={loadingTitle || loadingArticle}
+        <Button disabled={loadingTitle || loadingArticle || inTitle === ''}
         onClick={
           (e:any) => handleGenerateArticle(inTitle)
         }
@@ -315,7 +321,7 @@ useEffect(() => {
       {loadingArticle ? (
         <Card paddingBottom={4} paddingLeft={4}>
           <Spinner/>
-        <h3>Loading article...</h3>
+          <h3>Loading article...</h3>
         </Card>
       ) : null}
       <Card padding={4}></Card>
@@ -414,7 +420,7 @@ useEffect(() => {
         />
       </Card>
       <Card padding={4}>
-        <Button disabled={loadingTitle || loadingArticle} onClick={(e:any) => handleGenerateArticle(radio)}
+        <Button disabled={loadingTitle || loadingArticle || radio === ''} onClick={(e:any) => handleGenerateArticle(radio)}
           fontSize={[2, 2, 3]}
           mode="ghost"
           padding={[3, 3, 4]}
