@@ -10,7 +10,6 @@ import Spinner from './spinner.jsx';
 const sanityProjectId = `${process.env.SANITY_STUDIO_PROJECT_ID}`;
 const sanityDataset = `${process.env.SANITY_STUDIO_DATASET}`;
 const sanityToken = `${process.env.SANITY_STUDIO_WRITE_ACCESS}`;
-const apiUrl = `https://${sanityProjectId}.api.sanity.io/v1/data/query/${sanityDataset}`;
 
 // Sanity Client
 const client = createClient({
@@ -31,29 +30,23 @@ const ChatGptPlugin = () => {
   const openai = new OpenAIApi(configuration);
 
   // React hooks to hold values
-  
   const [showTopic, setShowTopic] = useState(1);
   const [inTopic, setInTopic] = useState('');
   const [inTitle, setInTitle] = useState('');
-
   const [radio, setRadio] = useState('');
   const [titles, setTitles] = useState(['', '', '','','']);
   const [articleResponse, setArticleResponse] = useState('');
-
   const [title, setTitle] = useState('');
   const [ingress, setIngress] = useState('');
   const [body, setBody] = useState('');
   const [unsplashQuery, setUnsplashQuery] = useState('');
   const [transactionId, setTransactionId] = useState(null);
-  
   const [loadingTitle, setLoadingTitle] = useState(false);
   const [loadingArticle, setLoadingArticle] = useState(false);
   const [savingArticle, setSavingArticle] = useState(false);
-
   const [jsonError, setJsonError] = useState(false);
   const [openAiError, setOpenAiError] = useState(false);
   const [saveArticleError, setSaveArticleError] = useState(false);
-  
   
   const currentDate = new Date().toISOString().split('T')[0];
 
@@ -278,7 +271,7 @@ const ChatGptPlugin = () => {
       let title = responseObject.title;
       let ingress = responseObject.ingress;
 
-      let paragraphs = responseObject.body.map((item: { paragraph: any; }) => item.paragraph);
+      let paragraphs = responseObject.body.map((body: { paragraph: any; }) => body.paragraph);
       let body = paragraphs.join('\n\n');
     
       setTitle(title);
