@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, Card,  TextArea, Flex, Text, Radio, Label, Stack, } from '@sanity/ui';
+import { Box, Button, Card,  TextArea, Flex, Text, Radio, Label, Stack, Select} from '@sanity/ui';
 import { createClient } from '@sanity/client';
 import { Configuration, OpenAIApi } from "openai";
 import * as literal from './literalConstants';
@@ -47,11 +47,16 @@ const ChatGptPlugin = () => {
   const [jsonError, setJsonError] = useState(false);
   const [openAiError, setOpenAiError] = useState(false);
   const [saveArticleError, setSaveArticleError] = useState(false);
+  const [style, setStyle] = useState('Tabloid');
   
   const currentDate = new Date().toISOString().split('T')[0];
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRadio(event.currentTarget.value);
+  };
+
+  const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setStyle(event.currentTarget.value);
   };
 
   const handleGenerateTitles = async () => {
@@ -102,14 +107,15 @@ const ChatGptPlugin = () => {
     setIngress('');
     setBody('');
     setRadio('');
+    console.log(`literal.articleSystem${style}`)
 
     // API prompt for article generation
     openai.createChatCompletion({
       messages: [
       {role: 'user', content: literal.articlePrompt(title)},
       {role: 'assistant', content: literal.articleAssistant},
-      {role: 'user', content: literal.articlePrompt(title)},
-      {role: 'system', content: literal.articleSystem}
+      {role: 'system', content: `literal.articleSystem${style}`},
+      {role: 'user', content: literal.articlePrompt(title)}
       ],
       model: 'gpt-3.5-turbo-0301',
       temperature: 0.8,
@@ -293,7 +299,12 @@ const ChatGptPlugin = () => {
   <Box id="container" sizing={'content'}>
     <Box style={{ display : showTopic==1 ? "block" : "none" }}>
       <Card padding={4} margin={4} paddingBottom={0}>
-        <Text size={4}>CHATGPT ARTICLE GENERATOR</Text>
+        <Text align={'center'} size={4}>CHATGPT ARTICLE GENERATOR</Text>
+      </Card>
+      <Card padding={4} margin={4} paddingBottom={0}>
+        <Text align={'center'} size={4}>Welcome to the article generator tool. <br />
+        Get started by either submitting a topic that you want some title suggestions for, or submitting a title that you want an article to be generated from
+        </Text>
       </Card>
       <Card padding={4}>
         <TextArea id="inTopic"
@@ -333,6 +344,26 @@ const ChatGptPlugin = () => {
           placeholder="Give me a title ..."
           value={inTitle}
         />
+      </Card>
+      <Card padding={4}>
+      <Text size={4}>Choose a style for your article</Text> 
+      </Card>
+      <Card padding={4}>
+        <Stack>
+          <Select
+            fontSize={[2, 2, 3, 4]}
+            padding={[3, 3, 4]}
+            space={[3, 3, 4]}
+            onChange={handleSelectChange}
+          >
+            <optgroup label="Author style">
+              <option>Tabloid</option>
+              <option>Informative</option>
+              <option>Artistic</option>
+              <option>Documentary</option>
+            </optgroup>
+          </Select>
+        </Stack>
       </Card>
       <Card padding={4}>
         <Button disabled={loadingTitle || loadingArticle || inTitle === ''} 
@@ -446,6 +477,26 @@ const ChatGptPlugin = () => {
           {loadingTitle && <h3>Loading titles...</h3>}
         </Card>
       ) : null}
+      <Card padding={4}>
+      <Text size={4}>Choose a style for your article</Text> 
+      </Card>
+      <Card padding={4}>
+        <Stack>
+          <Select
+            fontSize={[2, 2, 3, 4]}
+            padding={[3, 3, 4]}
+            space={[3, 3, 4]}
+            onChange={handleSelectChange}
+          >
+            <optgroup label="Author style">
+              <option>Tabloid</option>
+              <option>Informative</option>
+              <option>Artistic</option>
+              <option>Documentary</option>
+            </optgroup>
+          </Select>
+        </Stack>
+      </Card>
       <Card padding={4}>
         <Button disabled={loadingTitle || loadingArticle || radio === ''} onClick={(e:any) => handleGenerateArticle(radio)}
           fontSize={[2, 2, 3]}
