@@ -13,8 +13,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "incremental": true
+    "incremental": true,
+    "types": ["jest", "node"]
   },
-  "include": ["**/*.ts", "**/*.tsx", "components/unsplash/unsplash.js", "components/chatGPT/spinner.jsx"],
+  "include": ["**/*.ts", "**/*.tsx", "components/unsplash/unsplash.js", "components/chatGPT/spinner.jsx", "components/chatGPT/test/ChatGptPlugin.test.tsx"],
   "exclude": ["node_modules"]
 }
