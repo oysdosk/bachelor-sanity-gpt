@@ -15,7 +15,7 @@ jest.mock('@sanity/client', () => ({
 
 //jest.mock('../unsplash/uploadUnsplashImage.mjs', () => jest.fn());
 
-
+//const createChatCompletion = jest.fn();
 
 jest.mock('openai', () => ({
   Configuration: jest.fn(),
@@ -24,6 +24,11 @@ jest.mock('openai', () => ({
   })),
 }));
 
+/*jest.mock('openai', () => ({
+  Configuration: jest.fn(),
+  OpenAIApi: jest.fn(),
+  createChatCompletion: jest.fn()
+}));*/
 
 describe('ChatGptPlugin', () => {
   afterEach(() => {
@@ -35,7 +40,7 @@ describe('ChatGptPlugin', () => {
       organization: 'test-org-id',
       apiKey: 'test-api-key',
     }));
-    jest.spyOn(openaiInstance, 'createChatCompletion'); 
+    //jest.spyOn(openaiInstance, 'createChatCompletion'); 
   })
 
     
