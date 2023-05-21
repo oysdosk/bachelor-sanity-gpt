@@ -83,19 +83,19 @@ const ChatGptPlugin = () => {
       try {
       let responseObject = JSON.parse(res);
       setTitles(Object.values(responseObject));
-      //setLoadingTitle(false);
-      //setShowTopic(2);
+      setLoadingTitle(false);
+      setShowTopic(2);
       }
       catch (error) {
         console.error('Unable to parse JSON object.', error);
         setJsonError(true);
-        //setLoadingTitle(false);
+        setLoadingTitle(false);
         console.error(error);
       }
     })
     .catch(error => {
       setOpenAiError(true);
-      //setLoadingTitle(false);
+      setLoadingTitle(false);
       console.error(error);
     });  */
   }
@@ -134,7 +134,7 @@ const ChatGptPlugin = () => {
     setSaveArticleError(false);
     
     // API prompt for Unsplash query
-    openai.createChatCompletion({
+    /*openai.createChatCompletion({
       messages: [
        {role: 'user', content: literal.unsplashPrompt(ingress)},
        {role: 'assistant', content: literal.unsplashAssistant}
@@ -148,7 +148,7 @@ const ChatGptPlugin = () => {
       console.log(response);
       if (res !== undefined) setUnsplashQuery(res);
     })
-    .catch(error => console.error(error));
+    .catch(error => console.error(error));*/
   }
 
   // State function for saving article after getting Unsplash keywords from ChatGPT
@@ -167,7 +167,7 @@ const ChatGptPlugin = () => {
         const caption = unsplashResponse.caption;
         console.log("Unsplash caption: " + caption);
         console.log("Unsplash description: " + asset.description);
-        //setUnsplashQuery('');
+        setUnsplashQuery('');
 
         mutations = [{
           create: {
@@ -260,7 +260,9 @@ const ChatGptPlugin = () => {
         const articleId = data._id;
         console.log('Article ID: ' + articleId);
         console.log(`http://localhost:3333/desk/article;${articleId}`);
-        window.location.href = `http://localhost:3333/desk/article;${articleId}`
+        window.location.href = `http://localhost:3333/desk/article;${articleId}`;
+        //window.location.href = `https://sanity-oys-2.sanity.studio/desk/article;${articleId}`;
+
       })
     .catch(error => console.error(error));
   }
