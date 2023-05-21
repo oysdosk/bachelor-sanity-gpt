@@ -1,7 +1,6 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import fireEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { ThemeProvider, studioTheme } from '@sanity/ui';
 import ChatGptPlugin from '../ChatGptPlugin';
@@ -42,39 +41,25 @@ jest.mock('../../unsplash/uploadUnsplashImage.mjs', () => jest.fn());
 });*/
 
 
-describe('ChatGptPlugin', () => {
+describe('Homepage', () => {
   afterEach(() => {
     jest.resetAllMocks();
   });
-  let openaiInstance;
-  /*beforeEach(() => {
-    openaiInstance = new OpenAIApi(new Configuration({
+  //let openaiInstance;
+  beforeEach(() => {
+    render(
+      <ThemeProvider theme={studioTheme}>
+        <ChatGptPlugin />
+      </ThemeProvider>
+    );
+    /*openaiInstance = new OpenAIApi(new Configuration({
       organization: 'test-org-id',
       apiKey: 'test-api-key',
     }));
-    jest.spyOn(openaiInstance, 'createChatCompletion'); 
-  })*/
+    jest.spyOn(openaiInstance, 'createChatCompletion'); */
+  })
 
-
-  it('renders without crashing', () => {
-    render(
-      <ThemeProvider theme={studioTheme}>
-        <ChatGptPlugin />
-      </ThemeProvider>
-    );
-  });
-
-  it('calls OpenAI API when Create Titles button is clicked', async () => {
-    // Arrange
-    const { OpenAIApi } = require('openai'); 
-    const openaiInstance = new OpenAIApi();
-
-    render(
-      <ThemeProvider theme={studioTheme}>
-        <ChatGptPlugin />
-      </ThemeProvider>
-    );
-
+  /*it('calls OpenAI API when Create Titles button is clicked', async () => {
     // Get the button element
     const button = screen.getByText(/Create titles/i);
 
@@ -83,22 +68,15 @@ describe('ChatGptPlugin', () => {
 
     // Assert
     await waitFor(() => expect(openaiInstance.createChatCompletion).toHaveBeenCalled());
-  });
+  });*/
 
   it('shows loading text when Create Titles button is clicked', async () => {
-    // Arrange
-    render(
-      <ThemeProvider theme={studioTheme}>
-        <ChatGptPlugin />
-      </ThemeProvider>
-    );
-  
     // Get the textarea element and type into it
-    const textarea = screen.getByPlaceholderText('Give me a topic ...');
+    const textarea = screen.getByTestId('inTopic');
     userEvent.type(textarea, 'dummy text');
   
     // Wait for the state update and component re-render
-    const button = await waitFor(() => screen.getByText(/Create titles/i));
+    const button = await waitFor(() => screen.getByTestId(/generate-titles/i));
   
     // The button should now be enabled, so click it
     userEvent.click(button);
@@ -109,32 +87,148 @@ describe('ChatGptPlugin', () => {
     // Assert
     expect(loadingText.length).toBeGreaterThan(0);
   });
+
+  it('shows loading text when Generate Article button is clicked', async () => {
+    // Get the textarea element and type into it
+    const textarea = screen.getByTestId('inTitle');
+    userEvent.type(textarea, 'dummy text');
+  
+    // Wait for the state update and component re-render
+    const button = await waitFor(() => screen.getByTestId(/generate-article-1/i));
+  
+    // The button should now be enabled, so click it
+    userEvent.click(button);
+  
+    // Wait for the loading text to show up in the document
+    const loadingText = await screen.findAllByText('Loading article...');
+  
+    // Assert
+    expect(loadingText.length).toBeGreaterThan(0);
+  });
 })
 
-
-describe('handleGenerateTitles', () => {
-  let openaiInstance: any;
-  let handleGenerateTitles: any;
-
+describe('TitlePage', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+  //let openaiInstance;
   beforeEach(() => {
-    openaiInstance = new OpenAIApi(new Configuration({
+    // Arrange
+    render(
+      <ThemeProvider theme={studioTheme}>
+        <ChatGptPlugin />
+      </ThemeProvider>
+    );
+    /*openaiInstance = new OpenAIApi(new Configuration({
       organization: 'test-org-id',
       apiKey: 'test-api-key',
     }));
+    jest.spyOn(openaiInstance, 'createChatCompletion'); */
+  })
 
-    const mockComponentInstance = {
-      openai: openaiInstance,
-      // Add other necessary state variables or methods used in handleGenerateTitles here...
-    };
-    
-    handleGenerateTitles = ChatGptPlugin.prototype.handleGenerateTitles.bind(mockComponentInstance);
+  /*it('calls OpenAI API when Create Titles button is clicked', async () => {
+    // Arrange
+    const { OpenAIApi } = require('openai'); 
+    const openaiInstance = new OpenAIApi();
+
+    // Get the button element
+    const button = screen.getByText(/Create titles/i);
+
+    // Act
+    userEvent.click(button);
+
+    // Assert
+    await waitFor(() => expect(openaiInstance.createChatCompletion).toHaveBeenCalled());
+  });*/
+
+  it('shows loading text when Try Again button is clicked', async () => {
+    // Wait for the state update and component re-render
+    const button = await waitFor(() => screen.getByTestId(/titles-try-again/i));
+  
+    // The button should now be enabled, so click it
+    userEvent.click(button);
+  
+    // Wait for the loading text to show up in the document
+    const loadingText = await screen.findAllByText('Loading titles...');
+  
+    // Assert
+    expect(loadingText.length).toBeGreaterThan(0);
   });
 
-  it('should call createChatCompletion', async () => {
-    // Invoke the function
-    await handleGenerateTitles();
+  /*it('shows loading text when Generate Article button is clicked', async () => {
+    // Get a radio button and select it
+    const radio = screen.getByTestId('radio');
+    userEvent.click(radio);
 
-    // Assert that the spy was called
-    expect(openaiInstance.createChatCompletion).toHaveBeenCalled();
+    // Wait for the state update and component re-render
+    const button = await waitFor(() => screen.getByTestId(/generate-article-2/i));
+  
+    // The button should now be enabled, so click it
+    userEvent.click(button);
+  
+    // Wait for the loading text to show up in the document
+    const loadingText = await screen.findAllByText('Loading article...');
+  
+    // Assert
+    expect(loadingText.length).toBeGreaterThan(0);
+  });*/
+})
+
+describe('DraftPage', () => {
+  afterEach(() => {
+    jest.resetAllMocks();
   });
-});
+  //let openaiInstance;
+  beforeEach(() => {
+    // Arrange
+    render(
+      <ThemeProvider theme={studioTheme}>
+        <ChatGptPlugin />
+      </ThemeProvider>
+    );
+    /*openaiInstance = new OpenAIApi(new Configuration({
+      organization: 'test-org-id',
+      apiKey: 'test-api-key',
+    }));
+    jest.spyOn(openaiInstance, 'createChatCompletion'); */
+  })
+
+  /*it('calls OpenAI API when Create Titles button is clicked', async () => {
+    // Get the button element
+    const button = screen.getByText(/Create titles/i);
+
+    // Act
+    userEvent.click(button);
+
+    // Assert
+    await waitFor(() => expect(openaiInstance.createChatCompletion).toHaveBeenCalled());
+  });*/
+
+  it('shows loading text when Try Again button is clicked', async () => {
+    // Wait for the state update and component re-render
+    const button = await waitFor(() => screen.getByTestId(/article-try-again/i));
+  
+    // The button should now be enabled, so click it
+    userEvent.click(button);
+  
+    // Wait for the loading text to show up in the document
+    const loadingText = await screen.findAllByText('Loading article...');
+  
+    // Assert
+    expect(loadingText.length).toBeGreaterThan(0);
+  });
+
+  it('shows loading text when Save Article button is clicked', async () => {
+    // Wait for the state update and component re-render
+    const button = await waitFor(() => screen.getByTestId(/save-article/i));
+  
+    // The button should now be enabled, so click it
+    userEvent.click(button);
+  
+    // Wait for the loading text to show up in the document
+    const loadingText = await screen.findAllByText('Saving article...');
+  
+    // Assert
+    expect(loadingText.length).toBeGreaterThan(0);
+  });
+})

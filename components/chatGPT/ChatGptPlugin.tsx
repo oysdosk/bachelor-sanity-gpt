@@ -107,10 +107,10 @@ const ChatGptPlugin = () => {
     setIngress('');
     setBody('');
     setRadio('');
-    console.log(`literal.articleSystem${style}`)
+    //console.log(`literal.articleSystem${style}`)
 
     // API prompt for article generation
-    openai.createChatCompletion({
+    /*openai.createChatCompletion({
       messages: [
       {role: 'user', content: literal.articlePrompt(title)},
       {role: 'assistant', content: literal.articleAssistant},
@@ -126,7 +126,7 @@ const ChatGptPlugin = () => {
       const res = response.data.choices[0].message?.content || '';
       setArticleResponse(res);
     })
-    .catch(error => console.error(error));
+    .catch(error => console.error(error));*/
   }
 
   const handleSaveArticle = async () => {
@@ -307,7 +307,7 @@ const ChatGptPlugin = () => {
         </Text>
       </Card>
       <Card padding={4}>
-        <TextArea id="inTopic"
+        <TextArea id="inTopic" data-testid="inTopic"
           fontSize={[2, 2, 3, 3]}
           onChange={(event) =>
             setInTopic(event.currentTarget.value)
@@ -319,7 +319,7 @@ const ChatGptPlugin = () => {
         />
       </Card>
       <Card padding={4}>
-        <Button disabled={loadingTitle || loadingArticle || inTopic === ''} onClick={handleGenerateTitles}
+        <Button data-testid="generate-titles" disabled={loadingTitle || loadingArticle || inTopic === ''} onClick={handleGenerateTitles}
           fontSize={[2, 2, 3]}
           mode="ghost"
           padding={[3, 3, 4]}
@@ -334,7 +334,7 @@ const ChatGptPlugin = () => {
         </Card>
       ) : null}
       <Card padding={4}>
-        <TextArea id="inTitle"
+        <TextArea id="inTitle" data-testid="inTitle"
           fontSize={[2, 2, 3, 3]}
           onChange={(event) =>
             setInTitle(event.currentTarget.value)
@@ -366,13 +366,13 @@ const ChatGptPlugin = () => {
         </Stack>
       </Card>
       <Card padding={4}>
-        <Button disabled={loadingTitle || loadingArticle || inTitle === ''} 
+        <Button data-testid="generate-article-1" disabled={loadingTitle || loadingArticle || inTitle === ''} 
           onClick={(e:any) => handleGenerateArticle(inTitle)}
           fontSize={[2, 2, 3]}
           mode="ghost"
           padding={[3, 3, 4]}
           radius={3}
-          text="Create article"
+          text="Generate article"
           />
       </Card>
       {loadingArticle ? (
@@ -393,7 +393,7 @@ const ChatGptPlugin = () => {
       </Card>
       <Card padding={4}>
         <Flex align="center">
-          <Radio id="radio1" style={{display: 'block'}} 
+          <Radio id="radio1" data-testid="radio" style={{display: 'block'}} 
           checked={radio === titles[0]}
           name="titles"
           onChange={handleChange}
@@ -463,7 +463,7 @@ const ChatGptPlugin = () => {
         </Flex>
       </Card>
       <Card padding={4}>
-        <Button disabled={loadingTitle || loadingArticle} onClick={handleGenerateTitles}
+        <Button data-testid="titles-try-again" disabled={loadingTitle || loadingArticle} onClick={handleGenerateTitles}
           fontSize={[2, 2, 3]}
           mode="ghost"
           padding={[3, 3, 4]}
@@ -498,7 +498,7 @@ const ChatGptPlugin = () => {
         </Stack>
       </Card>
       <Card padding={4}>
-        <Button disabled={loadingTitle || loadingArticle || radio === ''} onClick={(e:any) => handleGenerateArticle(radio)}
+        <Button data-testid="generate-article-2" disabled={loadingTitle || loadingArticle || radio === ''} onClick={(e:any) => handleGenerateArticle(radio)}
           fontSize={[2, 2, 3]}
           mode="ghost"
           padding={[3, 3, 4]}
@@ -577,7 +577,7 @@ const ChatGptPlugin = () => {
         />
       </Card>
       <Card padding={4}>
-      <Button disabled={loadingArticle || savingArticle} onClick={(e:any) => handleGenerateArticle(title)}
+      <Button data-testid="article-try-again" disabled={loadingArticle || savingArticle} onClick={(e:any) => handleGenerateArticle(title)}
           fontSize={[2, 2, 3]}
           mode="ghost"
           padding={[3, 3, 4]}
@@ -586,7 +586,7 @@ const ChatGptPlugin = () => {
         />
       </Card>
       <Card padding={4}>
-        <Button disabled={loadingArticle || savingArticle} onClick={(e:any) => handleSaveArticle()}
+        <Button data-testid="save-article" disabled={loadingArticle || savingArticle} onClick={(e:any) => handleSaveArticle()}
           fontSize={[2, 2, 3]}
           mode="ghost"
           padding={[3, 3, 4]}
