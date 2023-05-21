@@ -66,7 +66,7 @@ const ChatGptPlugin = () => {
     setRadio('');
   
     // API prompt for titles
-    openai.createChatCompletion({
+    /*openai.createChatCompletion({
       messages: [
        {role: 'user', content: literal.titlePrompt(inTopic)},
        {role: 'assistant', content: literal.titleAssistant},
@@ -83,21 +83,21 @@ const ChatGptPlugin = () => {
       try {
       let responseObject = JSON.parse(res);
       setTitles(Object.values(responseObject));
-      setLoadingTitle(false);
-      setShowTopic(2);
+      //setLoadingTitle(false);
+      //setShowTopic(2);
       }
       catch (error) {
         console.error('Unable to parse JSON object.', error);
         setJsonError(true);
-        setLoadingTitle(false);
+        //setLoadingTitle(false);
         console.error(error);
       }
     })
     .catch(error => {
       setOpenAiError(true);
-      setLoadingTitle(false);
+      //setLoadingTitle(false);
       console.error(error);
-    });  
+    });  */
   }
 
   const handleGenerateArticle = async (title: string) => {

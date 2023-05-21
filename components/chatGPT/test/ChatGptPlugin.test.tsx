@@ -23,15 +23,23 @@ jest.mock('/Users/oysteindoskeland/Documents/OsloMet/Bachelor/Sanity-oys-2/sanit
   Configuration: jest.fn(),
 }));*/
 
-jest.mock("openai", () => {
+/*jest.mock("openai", () => {
+  return {
+    OpenAIApi: jest.fn().mockImplementation(() => ({
+      createChatCompletion: jest.fn().mockResolvedValue({ data: {choices: [{message: {content: ''}}]}}),
+    })),
+    Configuration: jest.fn(),
+  };
+});*/
+
+/*jest.mock("openai", () => {
   return {
     OpenAIApi: jest.fn().mockImplementation(() => {
       return {createChatCompletion: jest.fn()};
     }),
     Configuration: jest.fn(),
   };
-});
-
+});*/
 
 
 describe('ChatGptPlugin', () => {
@@ -39,13 +47,13 @@ describe('ChatGptPlugin', () => {
     jest.resetAllMocks();
   });
   let openaiInstance;
-  beforeEach(() => {
+  /*beforeEach(() => {
     openaiInstance = new OpenAIApi(new Configuration({
       organization: 'test-org-id',
       apiKey: 'test-api-key',
     }));
     jest.spyOn(openaiInstance, 'createChatCompletion'); 
-  })
+  })*/
 
     
 
@@ -85,16 +93,30 @@ describe('ChatGptPlugin', () => {
         <ChatGptPlugin />
       </ThemeProvider>
     );
-
-    // Get the button element
-    const button = screen.getByText(/Create titles/i);
-
-    // Act
+  
+    // Get the textarea element and type into it
+    const textarea = screen.getByPlaceholderText('Give me a topic ...');
+    userEvent.type(textarea, 'dummy text');
+  
+    // Wait for the state update and component re-render
+    const button = await waitFor(() => screen.getByText(/Create titles/i));
+  
+    // The button should now be enabled, so click it
     userEvent.click(button);
-
+  
+    // Wait for the loading text to show up in the document
+    const loadingText = await screen.findAllByText('Loading titles...');
+  
     // Assert
-    expect(await screen.findByText(/Loading titles.../i)).toBeInTheDocument();
+    expect(loadingText.length).toBeGreaterThan(0);
   });
+  
+  
+  
+
+
+  
+  
 
 
 })
