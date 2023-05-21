@@ -14,32 +14,27 @@ jest.mock('@sanity/client', () => ({
   }),
 }));
 
-jest.mock('/Users/oysteindoskeland/Documents/OsloMet/Bachelor/Sanity-oys-2/sanity-test-2/components/unsplash/uploadUnsplashImage.mjs', () => jest.fn());
+//jest.mock('../unsplash/uploadUnsplashImage.mjs', () => jest.fn());
 
-/*jest.mock('openai', () => ({
+
+
+jest.mock('openai', () => ({
+  Configuration: jest.fn(),
   OpenAIApi: jest.fn().mockImplementation(() => ({
-    createChatCompletion: jest.fn().mockResolvedValue({data: {choices: [{message: {content: ''}}]}}),
+    createChatCompletion: jest.fn(),
   })),
   Configuration: jest.fn(),
 }));*/
 
-/*jest.mock("openai", () => {
-  return {
-    OpenAIApi: jest.fn().mockImplementation(() => ({
-      createChatCompletion: jest.fn().mockResolvedValue({ data: {choices: [{message: {content: ''}}]}}),
-    })),
-    Configuration: jest.fn(),
-  };
-});*/
-
-/*jest.mock("openai", () => {
+jest.mock("openai", () => {
   return {
     OpenAIApi: jest.fn().mockImplementation(() => {
       return {createChatCompletion: jest.fn()};
     }),
     Configuration: jest.fn(),
   };
-});*/
+});
+
 
 
 describe('ChatGptPlugin', () => {
@@ -47,7 +42,7 @@ describe('ChatGptPlugin', () => {
     jest.resetAllMocks();
   });
   let openaiInstance;
-  /*beforeEach(() => {
+  beforeEach(() => {
     openaiInstance = new OpenAIApi(new Configuration({
       organization: 'test-org-id',
       apiKey: 'test-api-key',
@@ -66,9 +61,9 @@ describe('ChatGptPlugin', () => {
   });
 
   it('calls OpenAI API when Create Titles button is clicked', async () => {
-    // Arrange
+    /*// Arrange
     const { OpenAIApi } = require('openai'); 
-    const openaiInstance = new OpenAIApi();
+    const openaiInstance = new OpenAIApi();*/
 
     render(
       <ThemeProvider theme={studioTheme}>
