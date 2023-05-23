@@ -16,6 +16,6 @@
     "incremental": true,
     "types": ["jest", "node"]
   },
-  "include": ["**/*.ts", "**/*.tsx", "components/unsplash/unsplash.js", "components/chatGPT/spinner.jsx", "components/chatGPT/test/ChatGptPlugin.test.tsx"],
+  "include": ["**/*.ts", "**/*.tsx", "components/unsplash/unsplash.js", "components/spinner.jsx", "test/ChatGptPlugin.unit.test.tsx"],
   "exclude": ["node_modules"]
 }

@@ -3,8 +3,8 @@ import { Box, Button, Card,  TextArea, Flex, Text, Radio, Label, Stack, Select} 
 import { createClient } from '@sanity/client';
 import { Configuration, OpenAIApi } from "openai";
 import * as literal from './literalConstants';
-import uploadUnsplashImage from '../unsplash/uploadUnsplashImage.mjs';
-import Spinner from './spinner.jsx';
+import uploadUnsplashImage from '../../unsplash/uploadUnsplashImage.mjs';
+import Spinner from '../spinner.jsx';
 
 // Environment variables
 const sanityProjectId = `${process.env.SANITY_STUDIO_PROJECT_ID}`;
@@ -66,7 +66,7 @@ const ChatGptPlugin = () => {
     setRadio('');
   
     // API prompt for titles
-    /*openai.createChatCompletion({
+    openai.createChatCompletion({
       messages: [
        {role: 'user', content: literal.titlePrompt(inTopic)},
        {role: 'assistant', content: literal.titleAssistant},
@@ -78,29 +78,28 @@ const ChatGptPlugin = () => {
       max_tokens: 2048,
     })
     .then(response => {
-      console.log(response);
       const res = response.data.choices[0].message?.content || '';
       try {
-      let responseObject = JSON.parse(res);
-      setTitles(Object.values(responseObject));
-      setLoadingTitle(false);
-      setShowTopic(2);
+        let responseObject = JSON.parse(res); 
+        setTitles(Object.values(responseObject));
+        setLoadingTitle(false);
+        setShowTopic(2);
       }
       catch (error) {
         console.error('Unable to parse JSON object.', error);
         setJsonError(true);
         setLoadingTitle(false);
-        console.error(error);
       }
     })
     .catch(error => {
       setOpenAiError(true);
       setLoadingTitle(false);
       console.error(error);
-    });  */
+    });  
   }
 
   const handleGenerateArticle = async (title: string) => {
+    console.log("Radio: " + radio);
     setLoadingArticle(true);
     setJsonError(false);
     setOpenAiError(false);
@@ -110,7 +109,7 @@ const ChatGptPlugin = () => {
     //console.log(`literal.articleSystem${style}`)
 
     // API prompt for article generation
-    /*openai.createChatCompletion({
+    openai.createChatCompletion({
       messages: [
       {role: 'user', content: literal.articlePrompt(title)},
       {role: 'assistant', content: literal.articleAssistant},
@@ -126,7 +125,7 @@ const ChatGptPlugin = () => {
       const res = response.data.choices[0].message?.content || '';
       setArticleResponse(res);
     })
-    .catch(error => console.error(error));*/
+    .catch(error => console.error(error));
   }
 
   const handleSaveArticle = async () => {
@@ -134,7 +133,7 @@ const ChatGptPlugin = () => {
     setSaveArticleError(false);
     
     // API prompt for Unsplash query
-    /*openai.createChatCompletion({
+    openai.createChatCompletion({
       messages: [
        {role: 'user', content: literal.unsplashPrompt(ingress)},
        {role: 'assistant', content: literal.unsplashAssistant}
@@ -148,7 +147,7 @@ const ChatGptPlugin = () => {
       console.log(response);
       if (res !== undefined) setUnsplashQuery(res);
     })
-    .catch(error => console.error(error));*/
+    .catch(error => console.error(error));
   }
 
   // State function for saving article after getting Unsplash keywords from ChatGPT
@@ -332,7 +331,7 @@ const ChatGptPlugin = () => {
       {loadingTitle ? (
         <Card paddingBottom={4} paddingLeft={4}>
           <Spinner/>
-          <h3>Loading titles...</h3>
+          <h3 data-testid="loading-titles-1">Loading titles...</h3>
         </Card>
       ) : null}
       <Card padding={4}>
@@ -476,7 +475,7 @@ const ChatGptPlugin = () => {
       {loadingTitle ? (
         <Card paddingBottom={4} paddingLeft={4}>
           <Spinner/>
-          {loadingTitle && <h3>Loading titles...</h3>}
+          {loadingTitle && <h3 data-testid="loading-titles-2">Loading titles...</h3>}
         </Card>
       ) : null}
       <Card padding={4}>
