@@ -1,4 +1,4 @@
-import {defineField, defineType, Rule} from 'sanity';
+import {defineField, defineType} from 'sanity';
 
 export default defineType({
     name: 'article',
@@ -28,8 +28,8 @@ export default defineType({
         ]
       }),
       defineField({
-        name: 'ingress',
-        title: 'Ingress',
+        name: 'introduction',
+        title: 'introduction',
         type: 'text',
       }),
       defineField({

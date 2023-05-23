@@ -149,7 +149,7 @@ describe('Homepage', () => {
   test('Create article success 1', async () => {
     const mockArticleResponse = JSON.stringify({
       title: 'Test Title',
-      ingress: 'Test Ingress',
+      introduction: 'Test introduction',
       body: [{ paragraph: 'Test Body Paragraph 1' }, { paragraph: 'Test Body Paragraph 2' }]
   });
   mockChatCompletion.mockResolvedValue({ data: { choices: [{ message: { content: mockArticleResponse } }] } });
@@ -168,7 +168,7 @@ describe('Homepage', () => {
 
     await waitFor(() => {
     expect(screen.getByDisplayValue('Test Title')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('Test Ingress')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Test introduction')).toBeInTheDocument();
     //expect(screen.getByDisplayValue('Test Body Paragraph 1')).toBeInTheDocument();
     });
   
@@ -191,7 +191,7 @@ describe('Titles page', () => {
         // Arrange
         const mockArticleResponse = JSON.stringify({
             title: 'Test Title',
-            ingress: 'Test Ingress',
+            introduction: 'Test introduction',
             body: [{ paragraph: 'Test Body Paragraph 1' }, { paragraph: 'Test Body Paragraph 2' }]
         });
         mockChatCompletion.mockResolvedValue({ data: { choices: [{ message: { content: mockArticleResponse } }] } });
@@ -220,12 +220,12 @@ describe('Titles page', () => {
         //await waitForElementToBeRemoved(() => screen.queryByText('Loading article...'));
         
         expect((screen.getByTestId('title') as HTMLTextAreaElement).value).toBe('Mocked title');
-        expect((screen.getByTestId('ingress') as HTMLTextAreaElement).value).toBe('Mocked ingress');
+        expect((screen.getByTestId('introduction') as HTMLTextAreaElement).value).toBe('Mocked introduction');
         expect((screen.getByTestId('body') as HTMLTextAreaElement).value).toBe('Mocked paragraph 1\n\nMocked paragraph 2');
 
         // Verify rendered values
         expect(await screen.getByDisplayValue('Test Title')).toBeInTheDocument();
-        expect(await screen.getByDisplayValue('Test Ingress')).toBeInTheDocument();
+        expect(await screen.getByDisplayValue('Test introduction')).toBeInTheDocument();
         expect(await screen.getByDisplayValue('Test Body Paragraph 1\n\nTest Body Paragraph 2')).toBeInTheDocument();
         
         // Verify no json error

@@ -1,3 +1,5 @@
+// File that contains all prompts and error message used in 'ChatGptPlugin'
+
 // Title generation prompts
 export const titlePrompt = (prompt: string) => `Suggest five titles for an article about ${prompt}. 
 Return the titles in valid RFC8259 JSON format`;
@@ -11,11 +13,11 @@ export const titleAssistant =  `{
 export const titleSystem = `You are a news editor looking for captivating titles for your articles. Your purpose here is to only answer with titles in valid RFC8259 JSON format.`;
 
 // Article generation prompts
-export const articlePrompt = (title: string) => `Write an ingress and a body for a text titled '${capitalizeFirstLetter(title)}'. The text of the body should be approximately 500 words.
-Return the article ONLY in valid RFC8259 JSON format with three elements: "title", "ingress" and "body". The "body" element itself is an array with "paragraph" elements.`;
+export const articlePrompt = (title: string) => `Write an introduction and a body for a text titled '${capitalizeFirstLetter(title)}'. The text of the body should be approximately 500 words.
+Return the article ONLY in valid RFC8259 JSON format with three elements: "title", "introduction" and "body". The "body" element itself is an array with "paragraph" elements.`;
 export const articleAssistant = `{
 	"title": "...",
-	"ingress": "...",
+	"introduction": "...",
 	"body": [{
 			"paragraph": "..."
 		},
@@ -30,30 +32,30 @@ export const articleAssistant = `{
 export const articleSystemTabloid = `Your job is to write an article based on the title you receive. 
     Don't change the original title.
     You write in a tabloid and engaging style desperate to captivate the reader.
-    Your response is always ONLY in valid RFC8259 JSON format with three elements: "title", "ingress" and "body". 
+    Your response is always ONLY in valid RFC8259 JSON format with three elements: "title", "introduction" and "body". 
     The "body" element itself is an array with "paragraph" elements.`;
 
 export const articleSystemDocumentary = `Your job is to write an article based on the title you receive. 
 	Don't change the original title.
 	You write in the style of a documentary, with many interesting facts and a genuine interest for the topic at hand that you are excited about sharing with the rest of the world. 
-	Your response is always ONLY in valid RFC8259 JSON format with three elements: "title", "ingress" and "body". 
+	Your response is always ONLY in valid RFC8259 JSON format with three elements: "title", "introduction" and "body". 
 	The "body" element itself is an array with "paragraph" elements.`;
 
 export const articleSystemInformative = `Your job is to write an article based on the title you receive. 
 	Don't change the original title.
 	You write in a dull news anchor type of style, showing as little emotion as possible, just relaying important information in a serious way. 
-	Your response is always ONLY in valid RFC8259 JSON format with three elements: "title", "ingress" and "body". 
+	Your response is always ONLY in valid RFC8259 JSON format with three elements: "title", "introduction" and "body". 
 	The "body" element itself is an array with "paragraph" elements.`;
 
 export const articleSystemArtistic = `Your job is to write a text based on the title you receive. 
 	Don't change the original title.
 	You write in an artistic style, painting pictures with your words like a brilliant author of fiction litterature would.
 	Remember that everything you write should be in the same style, and the text of the body should be a fictional story. 
-	Your response is always ONLY in valid RFC8259 JSON format with three elements: "title", "ingress" and "body". 
+	Your response is always ONLY in valid RFC8259 JSON format with three elements: "title", "introduction" and "body". 
 	The "body" element itself is an array with "paragraph" elements.`;
 
 // Unsplash prompts
-export const unsplashPrompt = (ingress: string) => `Suggest two keywords based on the following ingress: '${ingress}'. Your response should only consist of those two words encapsulated within the same double quotes.`;
+export const unsplashPrompt = (introduction: string) => `Suggest two keywords based on the following introduction: '${introduction}'. Your response should only consist of those two words encapsulated within the same double quotes.`;
 export const unsplashAssistant =  `"keyword1 keyword2"`;
 
 // Sanity queries

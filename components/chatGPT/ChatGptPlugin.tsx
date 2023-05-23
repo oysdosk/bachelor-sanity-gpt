@@ -11,7 +11,7 @@ const sanityProjectId = `${process.env.SANITY_STUDIO_PROJECT_ID}`;
 const sanityDataset = `${process.env.SANITY_STUDIO_DATASET}`;
 const sanityToken = `${process.env.SANITY_STUDIO_WRITE_ACCESS}`;
 
-// Sanity Client
+// Sanity Client config
 const client = createClient({
   projectId: `${process.env.SANITY_STUDIO_PROJECT_ID}`,
   dataset: `${process.env.SANITY_STUDIO_DATASET}`,
@@ -37,10 +37,10 @@ const ChatGptPlugin = () => {
   const [titles, setTitles] = useState(['', '', '','','']);
   const [articleResponse, setArticleResponse] = useState('');
   const [title, setTitle] = useState('');
-  const [ingress, setIngress] = useState('');
+  const [introduction, setIntroduction] = useState('');
   const [body, setBody] = useState('');
   const [unsplashQuery, setUnsplashQuery] = useState('');
-  const [transactionId, setTransactionId] = useState(null);
+  const [postSuccess, setPostSuccess] = useState(false);
   const [loadingTitle, setLoadingTitle] = useState(false);
   const [loadingArticle, setLoadingArticle] = useState(false);
   const [savingArticle, setSavingArticle] = useState(false);
@@ -48,17 +48,18 @@ const ChatGptPlugin = () => {
   const [openAiError, setOpenAiError] = useState(false);
   const [saveArticleError, setSaveArticleError] = useState(false);
   const [style, setStyle] = useState('Tabloid');
-  
-  const currentDate = new Date().toISOString().split('T')[0];
 
+  // Sets value of radio to selected radio button
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRadio(event.currentTarget.value);
   };
 
+  // Sets value of author style to selected dropdown item
   const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setStyle(event.currentTarget.value);
   };
 
+  // Method for generating list of titles
   const handleGenerateTitles = async () => {
     setLoadingTitle(true);
     setJsonError(false);
@@ -79,18 +80,21 @@ const ChatGptPlugin = () => {
     })
     .then(response => {
       const res = response.data.choices[0].message?.content || '';
+      // Tries to convert to JSON and map to `titles` array
       try {
         let responseObject = JSON.parse(res); 
         setTitles(Object.values(responseObject));
         setLoadingTitle(false);
         setShowTopic(2);
       }
+      // Unable to convert to JSON or map to `titles` array
       catch (error) {
         console.error('Unable to parse JSON object.', error);
         setJsonError(true);
         setLoadingTitle(false);
       }
     })
+    // API request failed
     .catch(error => {
       setOpenAiError(true);
       setLoadingTitle(false);
@@ -98,15 +102,13 @@ const ChatGptPlugin = () => {
     });  
   }
 
+  // Method for generating article draft
   const handleGenerateArticle = async (title: string) => {
-    console.log("Radio: " + radio);
     setLoadingArticle(true);
     setJsonError(false);
     setOpenAiError(false);
-    setIngress('');
+    setIntroduction('');
     setBody('');
-    setRadio('');
-    //console.log(`literal.articleSystem${style}`)
 
     // API prompt for article generation
     openai.createChatCompletion({
@@ -120,60 +122,70 @@ const ChatGptPlugin = () => {
       temperature: 0.8,
       max_tokens: 2048,
     })
+    // Update useState variable `articleResponse` to initiate useEffect hook
     .then(response => {
       console.log(response)
       const res = response.data.choices[0].message?.content || '';
       setArticleResponse(res);
     })
-    .catch(error => console.error(error));
+    // API request failed
+    .catch(error => {
+      setOpenAiError(true);
+      setLoadingArticle(false);
+      console.error(error);
+    });  
   }
 
+  // Method for saving article to Sanity Desk
   const handleSaveArticle = async () => {
     setSavingArticle(true);  
     setSaveArticleError(false);
     
-    // API prompt for Unsplash query
+    // API request to ChatGPT for keywords to prompt for Unsplash query
     openai.createChatCompletion({
       messages: [
-       {role: 'user', content: literal.unsplashPrompt(ingress)},
+       {role: 'user', content: literal.unsplashPrompt(introduction)},
        {role: 'assistant', content: literal.unsplashAssistant}
       ],
       model: 'gpt-3.5-turbo-0301',
       temperature: 0.3,
       max_tokens: 16,
     })
+    // Update useState variable `unsplashQuery` to initiate useEffect hook
     .then(response => {
       const res = response.data.choices[0].message?.content;
       console.log(response);
       if (res !== undefined) setUnsplashQuery(res);
     })
-    .catch(error => console.error(error));
+    // API request failed
+    .catch(error => {
+      setUnsplashQuery('  ')    // Sends empty query to Unsplash
+      console.error(error)
+    });
   }
 
-  // State function for saving article after getting Unsplash keywords from ChatGPT
+  // Hook for saving article after getting Unsplash keywords from ChatGPT
   useEffect(() => {
     if (unsplashQuery === '') return;
     let mutations;
 
     (async () => {
+      // Attempting to retrieve image based on keywords
       const unsplashResponse = (await uploadUnsplashImage(unsplashQuery));
-      console.log("Unsplash query: " + unsplashQuery);
-      console.log(unsplashResponse);
       
       // Case: successfully retrieved image from Unsplash
       if (unsplashResponse !== null) {
         const asset = unsplashResponse.asset;
         const caption = unsplashResponse.caption;
-        console.log("Unsplash caption: " + caption);
-        console.log("Unsplash description: " + asset.description);
         setUnsplashQuery('');
 
+        // Preparing article with image for posting to Sanity
         mutations = [{
           create: {
             _id: 'drafts.',
             _type: 'article',
             title: title,
-            ingress: ingress,
+            introduction: introduction,
             body: body,
             image: {
               _type: 'image',
@@ -192,18 +204,21 @@ const ChatGptPlugin = () => {
       else{
         setUnsplashQuery('');
 
+        // Preparing article without image for posting to Sanity
         mutations = [{
           create: {
             _id: 'drafts.',
             _type: 'article',
             title: title,
-            ingress: ingress,
+            introduction: introduction,
             body: body,
           }
         }]
       }
 
-      // Saving article
+      // Posting article to Sanity
+      const currentDate = new Date().toISOString().split('T')[0];   // Secures latest Sanity version
+      
       fetch(`https://${sanityProjectId}.api.sanity.io/v${currentDate}/data/mutate/${sanityDataset}`, {
         method: 'post',
         headers: {
@@ -214,15 +229,11 @@ const ChatGptPlugin = () => {
       })
       .then(response => {
         setTitle('');
-        setIngress('');
+        setIntroduction('');
         setBody('');
         setUnsplashQuery('');
         setSavingArticle(false);
-        return response.json();
-      })
-      .then(result => {
-        setTransactionId(result.transactionId);
-        console.log('Transaction ID: ' + result.transactionId);
+        setPostSuccess(true);
       })
       .catch(error => {
         console.error(error);
@@ -251,8 +262,8 @@ const ChatGptPlugin = () => {
   }, [unsplashQuery]);
 
   // Access and redirect to the last created article
-  if (transactionId !== null){
-    setTransactionId(null);
+  if (postSuccess){
+    setPostSuccess(false);
 
     client.fetch(literal.docIdQuery)
       .then(data => {
@@ -266,31 +277,34 @@ const ChatGptPlugin = () => {
     .catch(error => console.error(error));
   }
 
-  // UseEffect for a complete article response from OpenAI API
+  // UseEffect for a successful article response from OpenAI API
   useEffect(() => {
     if (articleResponse === '') return;
     setLoadingArticle(false);
-
     console.log(articleResponse);
+
+    // Tries to convert to JSON and fill each part of the article into into their respective fields
     try{
       setJsonError(false);
       let responseObject = JSON.parse(articleResponse);
       let title = responseObject.title;
-      let ingress = responseObject.ingress;
-
+      let introduction = responseObject.introduction;
+      // Adds two newlines between each paragraph inside the body
       let paragraphs = responseObject.body.map((body: { paragraph: any; }) => body.paragraph);
       let body = paragraphs.join('\n\n');
     
       setTitle(title);
-      setIngress(ingress);
+      setIntroduction(introduction);
       setBody(body);
 
       setShowTopic(3);
+      setRadio('');
     }
+    // Unable to convert to JSON or map to `body` array
     catch (error) {
       console.error('Unable to parse JSON object.', error);
       setJsonError(true);
-      setIngress('');
+      setIntroduction('');
       setBody('');
     }
   }
@@ -538,7 +552,7 @@ const ChatGptPlugin = () => {
         />
       </Card>
       <Card paddingBottom={4} paddingLeft={4}>
-        <Label size={4}>Ingress</Label>
+        <Label size={4}>introduction</Label>
       </Card>
       {loadingArticle ? (
         <Card paddingBottom={4} paddingLeft={4}>
@@ -546,15 +560,15 @@ const ChatGptPlugin = () => {
         </Card>
       ) : null}
       <Card paddingBottom={4} paddingLeft={4}>
-        <TextArea id="ingress"
+        <TextArea id="introduction"
           fontSize={[2, 2, 3, 3]}
           onChange={(event) =>
-            setIngress(event.currentTarget.value)
+            setIntroduction(event.currentTarget.value)
           }
           rows={5}
           padding={[3, 3, 4]}
           radius={3}
-          value={ingress}
+          value={introduction}
         />
       </Card>
       <Card paddingBottom={4} paddingLeft={4}>
