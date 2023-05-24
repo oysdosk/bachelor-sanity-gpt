@@ -6,7 +6,9 @@ const generateTitles = async (inTopic: string,
     setJsonError: (value: boolean) => void, 
     setTitles: (value: string[]) => void, 
     setShowTopic: (value: number) => void, 
-    setOpenAiError: (value: boolean) => void) => {
+    setOpenAiError: (value: boolean) => void
+) => {
+    
   setLoadingTitle(true);
   setJsonError(false);
 

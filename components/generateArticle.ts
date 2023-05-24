@@ -8,8 +8,8 @@ const generateArticle = async (
   setJsonError: (value: boolean) => void,
   setArticleResponse: (value: string) => void,
   setOpenAiError: (value: boolean) => void
-    ) => {
-        
+) => {
+
   setLoadingArticle(true);
   setJsonError(false);
 

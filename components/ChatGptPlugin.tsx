@@ -5,6 +5,10 @@ import { Configuration, OpenAIApi } from "openai";
 import * as literal from './literalConstants';
 import uploadUnsplashImage from '../unsplash/uploadUnsplashImage.mjs';
 import Spinner from './spinner.jsx';
+import generateTitles from './generateTitles';
+import generateArticle from './generateArticle';
+import saveArticle from './saveArticle';
+import handleRedirect from './handleRedirect';
 
 // Environment variables
 const sanityProjectId = `${process.env.SANITY_STUDIO_PROJECT_ID}`;
@@ -58,110 +62,17 @@ const ChatGptPlugin = () => {
   const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setStyle(event.currentTarget.value);
   };
-
-  // Method for generating list of titles
-  const handleGenerateTitles = async () => {
-    setLoadingTitle(true);
-    setJsonError(false);
-    setOpenAiError(false);
-    setRadio('');
   
-    // API prompt for titles
-    openai.createChatCompletion({
-      messages: [
-       {role: 'user', content: literal.titlePrompt(inTopic)},
-       {role: 'assistant', content: literal.titleAssistant},
-       {role: 'user', content: literal.titlePrompt(inTopic)},
-       {role: 'system', content: literal.titleSystem},
-      ],
-      model: 'gpt-3.5-turbo-0301',
-      temperature: 0.9,
-      max_tokens: 2048,
-    })
-    .then(response => {
-      const res = response.data.choices[0].message?.content || '';
-      // Tries to convert to JSON and map to `titles` array
-      try {
-        let responseObject = JSON.parse(res); 
-        setTitles(Object.values(responseObject));
-        setLoadingTitle(false);
-        setShowTopic(2);
-      }
-      // Unable to convert to JSON or map to `titles` array
-      catch (error) {
-        console.error('Unable to parse JSON object.', error);
-        setJsonError(true);
-        setLoadingTitle(false);
-      }
-    })
-    // API request failed
-    .catch(error => {
-      setOpenAiError(true);
-      setLoadingTitle(false);
-      console.error(error);
-    });  
+  const handleGenerateTitles = async () => {
+    generateTitles(inTopic, setLoadingTitle, setJsonError, setTitles, setShowTopic, setOpenAiError);
   }
 
-  // Method for generating article draft
   const handleGenerateArticle = async (title: string) => {
-    setLoadingArticle(true);
-    setJsonError(false);
-    setOpenAiError(false);
-    setIntroduction('');
-    setBody('');
-
-    // API prompt for article generation
-    openai.createChatCompletion({
-      messages: [
-      {role: 'user', content: literal.articlePrompt(title)},
-      {role: 'assistant', content: literal.articleAssistant},
-      {role: 'system', content: `literal.articleSystem${style}`},
-      {role: 'user', content: literal.articlePrompt(title)}
-      ],
-      model: 'gpt-3.5-turbo-0301',
-      temperature: 0.8,
-      max_tokens: 2048,
-    })
-    // Update useState variable `articleResponse` to initiate useEffect hook
-    .then(response => {
-      console.log(response)
-      const res = response.data.choices[0].message?.content || '';
-      setArticleResponse(res);
-    })
-    // API request failed
-    .catch(error => {
-      setOpenAiError(true);
-      setLoadingArticle(false);
-      console.error(error);
-    });  
+    generateArticle(title, style, setLoadingArticle, setJsonError, setArticleResponse, setOpenAiError);
   }
 
-  // Method for saving article to Sanity Desk
   const handleSaveArticle = async () => {
-    setSavingArticle(true);  
-    setSaveArticleError(false);
-    
-    // API request to ChatGPT for keywords to prompt for Unsplash query
-    openai.createChatCompletion({
-      messages: [
-       {role: 'user', content: literal.unsplashPrompt(introduction)},
-       {role: 'assistant', content: literal.unsplashAssistant}
-      ],
-      model: 'gpt-3.5-turbo-0301',
-      temperature: 0.3,
-      max_tokens: 16,
-    })
-    // Update useState variable `unsplashQuery` to initiate useEffect hook
-    .then(response => {
-      const res = response.data.choices[0].message?.content;
-      console.log(response);
-      if (res !== undefined) setUnsplashQuery(res);
-    })
-    // API request failed
-    .catch(error => {
-      setUnsplashQuery('  ')    // Sends empty query to Unsplash
-      console.error(error)
-    });
+    saveArticle(introduction, setSavingArticle, setSaveArticleError, setUnsplashQuery);
   }
 
   // Hook for saving article after getting Unsplash keywords from ChatGPT
@@ -263,18 +174,7 @@ const ChatGptPlugin = () => {
 
   // Access and redirect to the last created article
   if (postSuccess){
-    setPostSuccess(false);
-
-    client.fetch(literal.docIdQuery)
-      .then(data => {
-        const articleId = data._id;
-        console.log('Article ID: ' + articleId);
-        console.log(`http://localhost:3333/desk/article;${articleId}`);
-        window.location.href = `http://localhost:3333/desk/article;${articleId}`;
-        //window.location.href = `https://sanity-oys-2.sanity.studio/desk/article;${articleId}`;
-
-      })
-    .catch(error => console.error(error));
+    handleRedirect(setPostSuccess);
   }
 
   // UseEffect for a successful article response from OpenAI API
