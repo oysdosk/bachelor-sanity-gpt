@@ -16,6 +16,7 @@ const generateArticle = async (
   setLoadingArticle(true);
   setJsonError(false);
 
+  // API prompt for article generation
   openai.createChatCompletion({
     messages: [
       {role: 'user', content: literal.articlePrompt(title)},
@@ -27,10 +28,12 @@ const generateArticle = async (
     temperature: 0.8,
     max_tokens: 2048,
   })
+  // Update useState variable `articleResponse` to initiate useEffect hook
   .then(response => {
     const res = response.data.choices[0].message?.content || '';
     setArticleResponse(res);
   })
+  // API request failed
   .catch(error => {
     setOpenAiError(true);
     setLoadingArticle(false);

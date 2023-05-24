@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, Card,  TextArea, Flex, Text, Radio, Label, Stack, Select} from '@sanity/ui';
-import { createClient } from '@sanity/client';
-import { Configuration, OpenAIApi } from "openai";
 import * as literal from './literalConstants';
-import uploadUnsplashImage from '../unsplash/uploadUnsplashImage.mjs';
 import Spinner from './spinner.jsx';
-import { configuration } from '../api/openAi';
 import generateTitles from './generateTitles';
 import generateArticle from './generateArticle';
 import handleRedirect from './handleRedirect';
@@ -13,30 +9,12 @@ import saveArticle from './saveArticle';
 import useEffectUnsplashQuery from './useEffectUnsplashQuery';
 import useEffectArticleResponse from './useEffectArticleResponse';
 
-
 // Environment variables
 const sanityProjectId = `${process.env.SANITY_STUDIO_PROJECT_ID}`;
 const sanityDataset = `${process.env.SANITY_STUDIO_DATASET}`;
 const sanityToken = `${process.env.SANITY_STUDIO_WRITE_ACCESS}`;
 
-// Sanity Client
-/*const client = createClient({
-  projectId: `${process.env.SANITY_STUDIO_PROJECT_ID}`,
-  dataset: `${process.env.SANITY_STUDIO_DATASET}`,
-  apiVersion: new Date().toISOString().split('T')[0],
-  token: `${process.env.SANITY_STUDIO_WRITE_ACCESS}`, 
-  useCdn: false,
-});*/
-
-// OpenAI API config
-/*const configuration = new Configuration({
-  organization: `${process.env.SANITY_STUDIO_OPENAI_ORG_ID}`,
-  apiKey: `${process.env.SANITY_STUDIO_OPENAI_API_KEY}`,   
-});*/
-
 const ChatGptPlugin = () => {
-  
-  const openai = new OpenAIApi(configuration);
 
   // React hooks to hold values
   const [showTopic, setShowTopic] = useState(1);
@@ -59,8 +37,44 @@ const ChatGptPlugin = () => {
   const [style, setStyle] = useState('Tabloid');
   const [titleError, setTitleError] = useState(false);
   
-  const currentDate = new Date().toISOString().split('T')[0];
+  // Method for generating list of titles
+  const handleGenerateTitles = async () => {
+    generateTitles(inTopic, setLoadingTitle, setJsonError, setTitles, setShowTopic, setOpenAiError);
+  }
+  
+  // Method for generating article draft
+  const handleGenerateArticle = async (title: string) => {
+    generateArticle(title, style, setLoadingArticle, setJsonError, setArticleResponse, setOpenAiError);
+  }
+  
+  // Method for saving article to Sanity Desk
+  const handleSaveArticle = async () => {
+    saveArticle(introduction, setSavingArticle, setSaveArticleError, setUnsplashQuery);
+  }
+  
+  // UseEffect hook for a successful article response from OpenAI API
+  useEffectArticleResponse(articleResponse, setTitle, setIntroduction, setBody, setShowTopic, setRadio, setLoadingArticle, setJsonError);
+  
+  // UseEffect hook for saving article after getting Unsplash keywords from ChatGPT
+  useEffectUnsplashQuery(unsplashQuery, setTitle, setIntroduction, setBody, setUnsplashQuery, setSavingArticle, setPostSuccess, setSaveArticleError, 
+    sanityProjectId, sanityDataset, sanityToken, title, introduction, body, literal.imgIdQuery);
+    
+  // Access and redirect to the last created article
+  if (postSuccess){
+    handleRedirect(setPostSuccess);
+  }
 
+  // Sets value of radio to selected radio button
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRadio(event.currentTarget.value);
+  };
+  
+  // Sets value of author style to selected dropdown item
+  const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setStyle(event.currentTarget.value);
+  };
+  
+  // Sets value to given title if it matches our chosen criterias
   const handleInTitleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const regex = /[a-zA-Z0-9]/;
     setInTitle(event.target.value);
@@ -71,6 +85,7 @@ const ChatGptPlugin = () => {
     }
   }
   
+  // Sets value to selected title if it matches our chosen criterias
   const handleTitleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const regex = /[a-zA-Z0-9]/;
     setTitle(event.target.value);
@@ -80,258 +95,6 @@ const ChatGptPlugin = () => {
       setTitleError(true);
     }
   }
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRadio(event.currentTarget.value);
-  };
-
-  const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setStyle(event.currentTarget.value);
-  };
-
-  /*const handleGenerateTitles = async () => {
-    setLoadingTitle(true);
-    setJsonError(false);
-    setOpenAiError(false);
-    setRadio('');
-  
-    // API prompt for titles
-    openai.createChatCompletion({
-      messages: [
-       {role: 'user', content: literal.titlePrompt(inTopic)},
-       {role: 'assistant', content: literal.titleAssistant},
-       {role: 'user', content: literal.titlePrompt(inTopic)},
-       {role: 'system', content: literal.titleSystem},
-      ],
-      model: 'gpt-3.5-turbo-0301',
-      temperature: 0.9,
-      max_tokens: 2048,
-    })
-    .then(response => {
-      const res = response.data.choices[0].message?.content || '';
-      try {
-        let responseObject = JSON.parse(res); 
-        setTitles(Object.values(responseObject));
-        setLoadingTitle(false);
-        setShowTopic(2);
-      }
-      catch (error) {
-        console.error('Unable to parse JSON object.', error);
-        setJsonError(true);
-        setLoadingTitle(false);
-      }
-    })
-    .catch(error => {
-      setOpenAiError(true);
-      setLoadingTitle(false);
-      console.error(error);
-    });  
-  }*/
-
-  const handleGenerateTitles = async () => {
-    generateTitles(inTopic, setLoadingTitle, setJsonError, setTitles, setShowTopic, setOpenAiError);
-  }
-
-  const handleGenerateArticle = async (title: string) => {
-    generateArticle(title, style, setLoadingArticle, setJsonError, setArticleResponse, setOpenAiError);
-  }
-
-  /*const handleGenerateArticle = async (title: string) => {
-    console.log("Radio: " + radio);
-    setLoadingArticle(true);
-    setJsonError(false);
-    setOpenAiError(false);
-    setIntroduction('');
-    setBody('');
-    setRadio('');
-    //console.log(`literal.articleSystem${style}`)
-
-    // API prompt for article generation
-    openai.createChatCompletion({
-      messages: [
-      {role: 'user', content: literal.articlePrompt(title)},
-      {role: 'assistant', content: literal.articleAssistant},
-      {role: 'system', content: `literal.articleSystem${style}`},
-      {role: 'user', content: literal.articlePrompt(title)}
-      ],
-      model: 'gpt-3.5-turbo-0301',
-      temperature: 0.8,
-      max_tokens: 2048,
-    })
-    .then(response => {
-      console.log(response)
-      const res = response.data.choices[0].message?.content || '';
-      setArticleResponse(res);
-    })
-    .catch(error => {
-      console.error(error);
-      setOpenAiError(true);
-      setLoadingArticle(false);
-    });
-  }*/
-
-  /*const handleSaveArticle = async () => {
-    setSavingArticle(true);  
-    setSaveArticleError(false);
-    
-    // API prompt for Unsplash query
-    openai.createChatCompletion({
-      messages: [
-       {role: 'user', content: literal.unsplashPrompt(introduction)},
-       {role: 'assistant', content: literal.unsplashAssistant}
-      ],
-      model: 'gpt-3.5-turbo-0301',
-      temperature: 0.3,
-      max_tokens: 16,
-    })
-    .then(response => {
-      const res = response.data.choices[0].message?.content;
-      console.log(response);
-      if (res !== undefined) setUnsplashQuery(res);
-    })
-    .catch(error => console.error(error));
-  }*/
-  const handleSaveArticle = async () => {
-    saveArticle(introduction, setSavingArticle, setSaveArticleError, setUnsplashQuery);
-  }
-
-  // State function for saving article after getting Unsplash keywords from ChatGPT
-  /*useEffect(() => {
-    if (unsplashQuery === '') return;
-    let mutations;
-
-    (async () => {
-      const unsplashResponse = (await uploadUnsplashImage(unsplashQuery));
-      console.log("Unsplash query: " + unsplashQuery);
-      console.log(unsplashResponse);
-      
-      // Case: successfully retrieved image from Unsplash
-      if (unsplashResponse !== null) {
-        const asset = unsplashResponse.asset;
-        const caption = unsplashResponse.caption;
-        console.log("Unsplash caption: " + caption);
-        console.log("Unsplash description: " + asset.description);
-        setUnsplashQuery('');
-
-        mutations = [{
-          create: {
-            _id: 'drafts.',
-            _type: 'article',
-            title: title,
-            introduction: introduction,
-            body: body,
-            image: {
-              _type: 'image',
-              asset: {
-                _type: 'reference',
-                _ref: asset._id,
-              },
-              caption: caption,
-              description: asset.description,
-            }
-          }
-        }]
-      }
-
-      // Case: no image from Unsplash
-      else{
-        setUnsplashQuery('');
-
-        mutations = [{
-          create: {
-            _id: 'drafts.',
-            _type: 'article',
-            title: title,
-            introduction: introduction,
-            body: body,
-          }
-        }]
-      }
-
-      // Saving article
-      fetch(`https://${sanityProjectId}.api.sanity.io/v${currentDate}/data/mutate/${sanityDataset}`, {
-        method: 'post',
-        headers: {
-          'Content-type': 'application/json',
-          Authorization: `Bearer ${sanityToken}`
-        },
-        body: JSON.stringify({mutations})
-      })
-      .then(response => {
-        setTitle('');
-        setIntroduction('');
-        setBody('');
-        setUnsplashQuery('');
-        setSavingArticle(false);
-        setPostSuccess(true);
-      })
-      .catch(error => {
-        console.error(error);
-
-        // Delete last uploaded image if unable to save article
-        client.fetch(literal.imgIdQuery)
-          .then(imageAsset => {
-            client.delete(imageAsset._id)
-              .then(res => {
-                console.log('Image asset deleted', res)
-              })
-              .catch(err => {
-                console.log('Error deleting image asset', err)
-              })
-          })
-          .catch(err => {
-            console.log('Error fetching image asset', err)
-          })
-
-        setUnsplashQuery('');
-        setSaveArticleError(true);
-        setSavingArticle(false);
-      });
-
-    })();
-  }, [unsplashQuery]);*/
-
-   // UseEffect hook for a successful article response from OpenAI API
-   useEffectArticleResponse(articleResponse, setTitle, setIntroduction, setBody, setShowTopic, setRadio, setLoadingArticle, setJsonError);
-
-   // UseEffect hook for saving article after getting Unsplash keywords from ChatGPT
-   useEffectUnsplashQuery(unsplashQuery, setTitle, setIntroduction, setBody, setUnsplashQuery, setSavingArticle, setPostSuccess, setSaveArticleError,
-      sanityProjectId, sanityDataset, sanityToken, title, introduction, body, literal.imgIdQuery);
-
-   // Access and redirect to the last created article
-   if (postSuccess){
-    handleRedirect(setPostSuccess);
-  }
-
-  // UseEffect for a complete article response from OpenAI API
-  /*useEffect(() => {
-    if (articleResponse === '') return;
-    setLoadingArticle(false);
-
-    console.log(articleResponse);
-    try{
-      setJsonError(false);
-      let responseObject = JSON.parse(articleResponse);
-      let title = responseObject.title;
-      let introduction = responseObject.introduction;
-
-      let paragraphs = responseObject.body.map((body: { paragraph: any; }) => body.paragraph);
-      let body = paragraphs.join('\n\n');
-    
-      setTitle(title);
-      setIntroduction(introduction);
-      setBody(body);
-
-      setShowTopic(3);
-    }
-    catch (error) {
-      console.error('Unable to parse JSON object.', error);
-      setJsonError(true);
-      setIntroduction('');
-      setBody('');
-    }
-  }
-  , [articleResponse]);*/
 
   return (
   <Box id="container" sizing={'content'}>

@@ -7,7 +7,8 @@ const handleRedirect = async (setPostSuccess: (value: boolean) => void) => {
 
   const client = createClient(clientInfo);
   client
-    .fetch(literal.docIdQuery)
+    .fetch(literal.docIdQuery)  // fetching the last saved article
+    // Redirecting to fetched article
     .then(data => {
       const articleId = data._id;
       console.log('Article ID: ' + articleId);

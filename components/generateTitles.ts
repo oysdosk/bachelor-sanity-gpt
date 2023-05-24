@@ -29,17 +29,20 @@ const generateTitles = async (inTopic: string,
   })
   .then(response => {
     const res = response.data.choices[0].message?.content || '';
+    // Tries to convert to JSON and map to `titles` array
     try {
       let responseObject = JSON.parse(res); 
       setTitles(Object.values(responseObject));
       setLoadingTitle(false);
       setShowTopic(2);
+    // Unable to convert to JSON or map to `titles` array
     } catch (error) {
       console.error('Unable to parse JSON object.', error);
       setJsonError(true);
       setLoadingTitle(false);
     }
   })
+  // API request failed
   .catch((error: any) => {
     setOpenAiError(true);
     setLoadingTitle(false);

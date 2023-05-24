@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import uploadUnsplashImage from "../unsplash/uploadUnsplashImage.mjs"; // replace with your actual function file
+import uploadUnsplashImage from "../unsplash/uploadUnsplashImage.mjs";
 import clientInfo from "../api/sanity";
 import { createClient } from '@sanity/client';
 
@@ -26,13 +26,16 @@ const useEffectUnsplashQuery = (
     let mutations;
 
     (async () => {
+      // Attempting to retrieve image based on keywords
       const unsplashResponse = await uploadUnsplashImage(unsplashQuery);
       
+      // Case: successfully retrieved image from Unsplash
       if (unsplashResponse !== null) {
         const asset = unsplashResponse.asset;
         const caption = unsplashResponse.caption;
         setUnsplashQuery('');
 
+        // Preparing article with image for posting to Sanity
         mutations = [{
           create: {
             _id: 'drafts.',
@@ -52,9 +55,11 @@ const useEffectUnsplashQuery = (
           }
         }]
       }
+      // Case: unable to retrieve image from Unsplash
       else{
         setUnsplashQuery('');
 
+        // Preparing article without image for posting to Sanity
         mutations = [{
           create: {
             _id: 'drafts.',
@@ -66,8 +71,8 @@ const useEffectUnsplashQuery = (
         }]
       }
 
-      const currentDate = new Date().toISOString().split('T')[0];   
-      
+      // Posting article to Sanity
+      const currentDate = new Date().toISOString().split('T')[0];   // Secures latest Sanity version
       fetch(`https://${sanityProjectId}.api.sanity.io/v${currentDate}/data/mutate/${sanityDataset}`, {
         method: 'post',
         headers: {
@@ -86,7 +91,8 @@ const useEffectUnsplashQuery = (
       })
       .catch(error => {
         console.error(error);
-
+        
+        // Delete last uploaded image if unable to save article
         client.fetch(imgIdQuery)
           .then(imageAsset => {
             client.delete(imageAsset._id)
