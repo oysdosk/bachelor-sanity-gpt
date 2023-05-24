@@ -62,8 +62,9 @@ export const docIdQuery = '*[_type == "article"] | order(_createdAt desc) [0]';
 
 // Error messages
 export const jsonError = "The server was unable to give a proper response. Please try again.";
-export const openAiError = "Trouble with ChatGPT at the moment. Please try again."
-export const saveArticleError = "Unable to save article. Please try again."
+export const openAiError = "Trouble with ChatGPT at the moment. Please try again.";
+export const saveArticleError = "Unable to save article. Please try again.";
+export const titleError = "Invalid input: at least one alphanumeric character is required.";
 
 // Capitalize the first letter of incoming title
 function capitalizeFirstLetter(word: string) {
