@@ -1,13 +1,4 @@
-import { createClient } from '@sanity/client';
-
-// Sanity client config
-const client = createClient({
-  projectId: `${process.env.SANITY_STUDIO_PROJECT_ID}`,
-  dataset: `${process.env.SANITY_STUDIO_DATASET}`,
-  apiVersion: new Date().toISOString().split('T')[0], // use current date as the API version
-  token: `${process.env.SANITY_STUDIO_WRITE_ACCESS}`, // the token for write access
-  useCdn: false, // don't use the CDN, as we are making write operations
-});
+import { client } from '../api/sanity';
 
 // Get the Unsplash access key from environment variables
 const unsplashAccessKey = `${process.env.SANITY_STUDIO_UNSPLASH_ACCESS_KEY}`;
