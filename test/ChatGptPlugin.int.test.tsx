@@ -3,9 +3,9 @@ import { render, screen, waitFor, act, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { ThemeProvider, studioTheme } from '@sanity/ui';
-import ChatGptPlugin from '../components/chatGPT/ChatGptPlugin';
+import ChatGptPlugin from '../components/ChatGptPlugin';
 import { Configuration, OpenAIApi } from "openai";
-import * as literal from '../components/chatGPT/literalConstants';
+import * as literal from '../components/literalConstants';
 
 jest.mock('@sanity/client', () => ({
   createClient: jest.fn().mockReturnValue({

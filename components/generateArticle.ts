@@ -1,4 +1,4 @@
-import { openai } from '../api/openaiAPI';
+import { openai } from '../api/openAi';
 import * as literal from './literalConstants';
 
 const generateArticle = async (
@@ -8,7 +8,8 @@ const generateArticle = async (
   setJsonError: (value: boolean) => void,
   setArticleResponse: (value: string) => void,
   setOpenAiError: (value: boolean) => void
-) => {
+    ) => {
+        
   setLoadingArticle(true);
   setJsonError(false);
 

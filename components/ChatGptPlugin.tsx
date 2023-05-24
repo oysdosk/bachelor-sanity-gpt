@@ -3,8 +3,8 @@ import { Box, Button, Card,  TextArea, Flex, Text, Radio, Label, Stack, Select} 
 import { createClient } from '@sanity/client';
 import { Configuration, OpenAIApi } from "openai";
 import * as literal from './literalConstants';
-import uploadUnsplashImage from '../../unsplash/uploadUnsplashImage.mjs';
-import Spinner from '../spinner.jsx';
+import uploadUnsplashImage from '../unsplash/uploadUnsplashImage.mjs';
+import Spinner from './spinner.jsx';
 
 // Environment variables
 const sanityProjectId = `${process.env.SANITY_STUDIO_PROJECT_ID}`;

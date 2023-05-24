@@ -3,11 +3,11 @@ import { render, screen, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { ThemeProvider, studioTheme } from '@sanity/ui';
-import ChatGptPlugin from '../components/chatGPT/ChatGptPlugin';
+import ChatGptPlugin from '../components/ChatGptPlugin';
 import { Configuration, OpenAIApi } from "openai";
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import * as literal from '../components/chatGPT/literalConstants';
+import * as literal from '../components/literalConstants';
 
 jest.mock('@sanity/client', () => ({
   createClient: jest.fn().mockReturnValue({
