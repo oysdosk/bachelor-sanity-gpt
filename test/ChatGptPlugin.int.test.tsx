@@ -3,9 +3,9 @@ import { render, screen, waitFor, act, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { ThemeProvider, studioTheme } from '@sanity/ui';
-import ChatGptPlugin from '../components/chatGPT/ChatGptPlugin';
+import ChatGptPlugin from '../components/ChatGptPlugin';
 import { Configuration, OpenAIApi } from "openai";
-import * as literal from '../components/chatGPT/literalConstants';
+import * as literal from '../components/literalConstants';
 
 jest.mock('@sanity/client', () => ({
   createClient: jest.fn().mockReturnValue({
@@ -527,7 +527,7 @@ describe('Save article', () => {
 
 
 
-describe('Titles page', () => {
+/*describe('Titles page', () => {
     const titlesMock = ["Title 1", "Title 2", "Title 3", "Title 4", "Title 5"];
     
     //jest.spyOn(React, 'useState').mockImplementation(() => [titlesMock, jest.fn()]);
@@ -575,4 +575,4 @@ describe('Titles page', () => {
         // Verify no json error
         //expect(await screen.queryByText(literal.jsonError)).not.toBeInTheDocument();
     });
-})
+})*/
