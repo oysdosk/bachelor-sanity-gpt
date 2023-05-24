@@ -1,4 +1,4 @@
-import { client } from '../api/sanity';
+import client from '../api/sanity';
 
 // Get the Unsplash access key from environment variables
 const unsplashAccessKey = `${process.env.SANITY_STUDIO_UNSPLASH_ACCESS_KEY}`;

@@ -16,7 +16,7 @@ jest.mock('@sanity/client', () => ({
   }),
 }));
 
-jest.mock('../../unsplash/uploadUnsplashImage.mjs', () => jest.fn());
+jest.mock('../unsplash/uploadUnsplashImage.mjs', () => jest.fn());
 
 /*const mockChatCompletion = jest.fn();
 jest.mock('openai', () => {

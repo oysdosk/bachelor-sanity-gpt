@@ -6,6 +6,7 @@ import { ThemeProvider, studioTheme } from '@sanity/ui';
 import ChatGptPlugin from '../components/ChatGptPlugin';
 import { Configuration, OpenAIApi } from "openai";
 import * as literal from '../components/literalConstants';
+import { openai } from '../api/openAi'
 
 jest.mock('@sanity/client', () => ({
   createClient: jest.fn().mockReturnValue({
@@ -14,9 +15,9 @@ jest.mock('@sanity/client', () => ({
   }),
 }));
 
-jest.mock('../../unsplash/uploadUnsplashImage.mjs', () => jest.fn());
+jest.mock('../unsplash/uploadUnsplashImage.mjs', () => jest.fn());
 
-const mockChatCompletion = jest.fn();
+var mockChatCompletion = jest.fn();
 jest.mock('openai', () => {
   return {
     OpenAIApi: jest.fn().mockImplementation(() => {
@@ -28,10 +29,10 @@ jest.mock('openai', () => {
   };
 });
 
-/*afterEach(() => {
+afterEach(() => {
     jest.resetAllMocks();
   });
-  */
+  
 beforeEach(() => {
   render(
     <ThemeProvider theme={studioTheme}>
@@ -66,7 +67,7 @@ describe('Homepage', () => {
 
     // Type into the `inTopic` to activate `Create article` button
     await userEvent.type(screen.getByTestId('inTopic'), 'dummy text');
-  
+
     // Wait for the state update and component re-render
     const button = await waitFor(() => screen.getByTestId(/generate-titles/i));
     expect(button).toBeEnabled();
@@ -87,7 +88,7 @@ describe('Homepage', () => {
     expect(screen.getByText(/Title 4/i)).toBeInTheDocument();
     expect(screen.getByText(/Title 5/i)).toBeInTheDocument();
     });
-  
+
     // Loading message not shown:
     expect(await screen.queryByText('Loading titles...')).not.toBeInTheDocument();
   });
@@ -111,13 +112,13 @@ describe('Homepage', () => {
 
     // Type into the `inTopic` to activate `Create article` button
     await userEvent.type(screen.getByTestId('inTopic'), 'dummy text');
-  
+
     // Wait for the state update and component re-render
     const button = await waitFor(() => screen.getByTestId(/generate-titles/i));
     expect(button).toBeEnabled();
 
     await userEvent.click(button);
-  
+
     // JSON error shown and Loading not shown:
     const jsonError = await screen.queryAllByText(literal.jsonError);
     expect(jsonError.length).toBeGreaterThan(0);
@@ -133,13 +134,13 @@ describe('Homepage', () => {
 
     // Type into the `inTopic` to activate `Create article` button
     await userEvent.type(screen.getByTestId('inTopic'), 'dummy text');
-  
+
     // Wait for the state update and component re-render
     const button = await waitFor(() => screen.getByTestId(/generate-titles/i));
     expect(button).toBeEnabled();
 
     await userEvent.click(button);
-  
+
     // OpenAI error shown and Loading not shown:
     const openAiError = await screen.queryAllByText(literal.openAiError);
     expect(openAiError.length).toBeGreaterThan(0);
@@ -149,7 +150,7 @@ describe('Homepage', () => {
   test('Create article success 1', async () => {
     const mockArticleResponse = JSON.stringify({
       title: 'Test Title',
-      introduction: 'Test introduction',
+      ingress: 'Test Ingress',
       body: [{ paragraph: 'Test Body Paragraph 1' }, { paragraph: 'Test Body Paragraph 2' }]
   });
   mockChatCompletion.mockResolvedValue({ data: { choices: [{ message: { content: mockArticleResponse } }] } });
@@ -159,7 +160,7 @@ describe('Homepage', () => {
 
     // Type into the `inTopic` to activate `Create article` button
     await userEvent.type(screen.getByTestId('inTitle'), 'Dummy text');
-  
+
     // Wait for the state update and component re-render
     const button = await waitFor(() => screen.getByTestId(/generate-article-1/i));
     expect(button).toBeEnabled();
@@ -168,10 +169,10 @@ describe('Homepage', () => {
 
     await waitFor(() => {
     expect(screen.getByDisplayValue('Test Title')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('Test introduction')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Test Ingress')).toBeInTheDocument();
     //expect(screen.getByDisplayValue('Test Body Paragraph 1')).toBeInTheDocument();
     });
-  
+
     // Loading message not shown:
     expect(await screen.queryByText('Loading article...')).not.toBeInTheDocument();
   });
@@ -186,12 +187,12 @@ describe('Homepage', () => {
 describe('Titles page', () => {
     const titlesMock = ["Title 1", "Title 2", "Title 3", "Title 4", "Title 5"];
     jest.spyOn(React, 'useState').mockImplementation(() => [titlesMock, jest.fn()]);
-    
+
     test('Create article success 2', async () => {
         // Arrange
         const mockArticleResponse = JSON.stringify({
             title: 'Test Title',
-            introduction: 'Test introduction',
+            ingress: 'Test Ingress',
             body: [{ paragraph: 'Test Body Paragraph 1' }, { paragraph: 'Test Body Paragraph 2' }]
         });
         mockChatCompletion.mockResolvedValue({ data: { choices: [{ message: { content: mockArticleResponse } }] } });
@@ -200,7 +201,7 @@ describe('Titles page', () => {
         expect(screen.getByText('GENERATED TITLES')).toBeInTheDocument();
 
         expect(screen.getByTestId(/generate-article-2/i)).toBeDisabled();
-        
+
         //Choose a radio button
         const radioButton = screen.getByTestId('radio') as HTMLInputElement;
 
@@ -215,19 +216,19 @@ describe('Titles page', () => {
         expect(button).toBeEnabled()
         // Verify loadingArticle becomes true
         //expect(screen.getByText('Loading article...')).toBeInTheDocument();
-    
+
         // Wait for loadingArticle to become false again
         //await waitForElementToBeRemoved(() => screen.queryByText('Loading article...'));
-        
+
         expect((screen.getByTestId('title') as HTMLTextAreaElement).value).toBe('Mocked title');
-        expect((screen.getByTestId('introduction') as HTMLTextAreaElement).value).toBe('Mocked introduction');
+        expect((screen.getByTestId('ingress') as HTMLTextAreaElement).value).toBe('Mocked ingress');
         expect((screen.getByTestId('body') as HTMLTextAreaElement).value).toBe('Mocked paragraph 1\n\nMocked paragraph 2');
 
         // Verify rendered values
         expect(await screen.getByDisplayValue('Test Title')).toBeInTheDocument();
-        expect(await screen.getByDisplayValue('Test introduction')).toBeInTheDocument();
+        expect(await screen.getByDisplayValue('Test Ingress')).toBeInTheDocument();
         expect(await screen.getByDisplayValue('Test Body Paragraph 1\n\nTest Body Paragraph 2')).toBeInTheDocument();
-        
+
         // Verify no json error
         expect(await screen.queryByText(literal.jsonError)).not.toBeInTheDocument();
     });

@@ -9,6 +9,8 @@ import generateTitles from './generateTitles';
 import generateArticle from './generateArticle';
 import saveArticle from './saveArticle';
 import handleRedirect from './handleRedirect';
+import useArticleResponseEffect from './useArticleResponseEffect';
+import useUnsplashQueryEffect from "./useUnsplashQueryEffect";
 
 // Environment variables
 const sanityProjectId = `${process.env.SANITY_STUDIO_PROJECT_ID}`;
@@ -75,140 +77,17 @@ const ChatGptPlugin = () => {
     saveArticle(introduction, setSavingArticle, setSaveArticleError, setUnsplashQuery);
   }
 
-  // Hook for saving article after getting Unsplash keywords from ChatGPT
-  useEffect(() => {
-    if (unsplashQuery === '') return;
-    let mutations;
+  // UseEffect hook for a successful article response from OpenAI API
+  useArticleResponseEffect(articleResponse, setTitle, setIntroduction, setBody, setShowTopic, setRadio, setLoadingArticle, setJsonError);
 
-    (async () => {
-      // Attempting to retrieve image based on keywords
-      const unsplashResponse = (await uploadUnsplashImage(unsplashQuery));
-      
-      // Case: successfully retrieved image from Unsplash
-      if (unsplashResponse !== null) {
-        const asset = unsplashResponse.asset;
-        const caption = unsplashResponse.caption;
-        setUnsplashQuery('');
-
-        // Preparing article with image for posting to Sanity
-        mutations = [{
-          create: {
-            _id: 'drafts.',
-            _type: 'article',
-            title: title,
-            introduction: introduction,
-            body: body,
-            image: {
-              _type: 'image',
-              asset: {
-                _type: 'reference',
-                _ref: asset._id,
-              },
-              caption: caption,
-              description: asset.description,
-            }
-          }
-        }]
-      }
-
-      // Case: no image from Unsplash
-      else{
-        setUnsplashQuery('');
-
-        // Preparing article without image for posting to Sanity
-        mutations = [{
-          create: {
-            _id: 'drafts.',
-            _type: 'article',
-            title: title,
-            introduction: introduction,
-            body: body,
-          }
-        }]
-      }
-
-      // Posting article to Sanity
-      const currentDate = new Date().toISOString().split('T')[0];   // Secures latest Sanity version
-      
-      fetch(`https://${sanityProjectId}.api.sanity.io/v${currentDate}/data/mutate/${sanityDataset}`, {
-        method: 'post',
-        headers: {
-          'Content-type': 'application/json',
-          Authorization: `Bearer ${sanityToken}`
-        },
-        body: JSON.stringify({mutations})
-      })
-      .then(response => {
-        setTitle('');
-        setIntroduction('');
-        setBody('');
-        setUnsplashQuery('');
-        setSavingArticle(false);
-        setPostSuccess(true);
-      })
-      .catch(error => {
-        console.error(error);
-
-        // Delete last uploaded image if unable to save article
-        client.fetch(literal.imgIdQuery)
-          .then(imageAsset => {
-            client.delete(imageAsset._id)
-              .then(res => {
-                console.log('Image asset deleted', res)
-              })
-              .catch(err => {
-                console.log('Error deleting image asset', err)
-              })
-          })
-          .catch(err => {
-            console.log('Error fetching image asset', err)
-          })
-
-        setUnsplashQuery('');
-        setSaveArticleError(true);
-        setSavingArticle(false);
-      });
-
-    })();
-  }, [unsplashQuery]);
+  // UseEffect hook for saving article after getting Unsplash keywords from ChatGPT
+  useUnsplashQueryEffect(unsplashQuery, setTitle, setIntroduction, setBody, setUnsplashQuery, setSavingArticle, setPostSuccess, setSaveArticleError,
+     sanityProjectId, sanityDataset, sanityToken, title, introduction, body, literal.imgIdQuery);
 
   // Access and redirect to the last created article
   if (postSuccess){
     handleRedirect(setPostSuccess);
   }
-
-  // UseEffect for a successful article response from OpenAI API
-  useEffect(() => {
-    if (articleResponse === '') return;
-    setLoadingArticle(false);
-    console.log(articleResponse);
-
-    // Tries to convert to JSON and fill each part of the article into into their respective fields
-    try{
-      setJsonError(false);
-      let responseObject = JSON.parse(articleResponse);
-      let title = responseObject.title;
-      let introduction = responseObject.introduction;
-      // Adds two newlines between each paragraph inside the body
-      let paragraphs = responseObject.body.map((body: { paragraph: any; }) => body.paragraph);
-      let body = paragraphs.join('\n\n');
-    
-      setTitle(title);
-      setIntroduction(introduction);
-      setBody(body);
-
-      setShowTopic(3);
-      setRadio('');
-    }
-    // Unable to convert to JSON or map to `body` array
-    catch (error) {
-      console.error('Unable to parse JSON object.', error);
-      setJsonError(true);
-      setIntroduction('');
-      setBody('');
-    }
-  }
-  , [articleResponse]);
 
   return (
   <Box id="container" sizing={'content'}>
