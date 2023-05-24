@@ -9,8 +9,8 @@ import generateTitles from './generateTitles';
 import generateArticle from './generateArticle';
 import saveArticle from './saveArticle';
 import handleRedirect from './handleRedirect';
-import useArticleResponseEffect from './useArticleResponseEffect';
-import useUnsplashQueryEffect from "./useUnsplashQueryEffect";
+import useArticleResponseEffect from './useEffectArticleResponse';
+import useUnsplashQueryEffect from "./useEffectUnsplashQuery";
 
 // Environment variables
 const sanityProjectId = `${process.env.SANITY_STUDIO_PROJECT_ID}`;
