@@ -5,6 +5,9 @@ import { Configuration, OpenAIApi } from "openai";
 import * as literal from './literalConstants';
 import uploadUnsplashImage from '../unsplash/uploadUnsplashImage.mjs';
 import Spinner from './spinner.jsx';
+import { configuration } from '../api/openAi';
+import generateTitles from './generateTitles';
+import generateArticle from './generateArticle';
 
 // Environment variables
 const sanityProjectId = `${process.env.SANITY_STUDIO_PROJECT_ID}`;
@@ -20,13 +23,14 @@ const client = createClient({
   useCdn: false,
 });
 
+/*// OpenAI API config
+const configuration = new Configuration({
+  organization: `${process.env.SANITY_STUDIO_OPENAI_ORG_ID}`,
+  apiKey: `${process.env.SANITY_STUDIO_OPENAI_API_KEY}`,   
+});*/
+
 const ChatGptPlugin = () => {
   
-  // OpenAI API config
-  const configuration = new Configuration({
-    organization: `${process.env.SANITY_STUDIO_OPENAI_ORG_ID}`,
-    apiKey: `${process.env.SANITY_STUDIO_OPENAI_API_KEY}`,   
-  });
   const openai = new OpenAIApi(configuration);
 
   // React hooks to hold values
@@ -80,7 +84,7 @@ const ChatGptPlugin = () => {
     setStyle(event.currentTarget.value);
   };
 
-  const handleGenerateTitles = async () => {
+  /*const handleGenerateTitles = async () => {
     setLoadingTitle(true);
     setJsonError(false);
     setOpenAiError(false);
@@ -117,9 +121,17 @@ const ChatGptPlugin = () => {
       setLoadingTitle(false);
       console.error(error);
     });  
+  }*/
+
+  const handleGenerateTitles = async () => {
+    generateTitles(inTopic, setLoadingTitle, setJsonError, setTitles, setShowTopic, setOpenAiError);
   }
 
   const handleGenerateArticle = async (title: string) => {
+    generateArticle(title, style, setLoadingArticle, setJsonError, setArticleResponse, setOpenAiError);
+  }
+
+  /*const handleGenerateArticle = async (title: string) => {
     console.log("Radio: " + radio);
     setLoadingArticle(true);
     setJsonError(false);
@@ -151,7 +163,7 @@ const ChatGptPlugin = () => {
       setOpenAiError(true);
       setLoadingArticle(false);
     });
-  }
+  }*/
 
   const handleSaveArticle = async () => {
     setSavingArticle(true);  

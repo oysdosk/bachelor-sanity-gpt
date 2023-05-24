@@ -1,4 +1,5 @@
-import { openai } from '../api/openAi';
+import { configuration } from '../api/openAi';
+import { OpenAIApi } from 'openai';
 import * as literal from './literalConstants';
 
 const generateTitles = async (inTopic: string, 
@@ -8,6 +9,8 @@ const generateTitles = async (inTopic: string,
     setShowTopic: (value: number) => void, 
     setOpenAiError: (value: boolean) => void
 ) => {
+
+  const openai = new OpenAIApi(configuration);
     
   setLoadingTitle(true);
   setJsonError(false);
