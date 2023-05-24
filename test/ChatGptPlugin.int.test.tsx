@@ -548,7 +548,6 @@ describe('Titles page', () => {
         
         //Choose a radio button
         const radioButton = await waitFor(() => screen.getByTestId('radio'));
-        radioButton.
 
         //await fireEvent.change(radioButton, { target: { value: "Dummy value" } });
         //expect(radioButton.value).toBe("Dummy value");
