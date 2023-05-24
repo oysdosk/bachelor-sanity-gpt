@@ -9,6 +9,10 @@ import { configuration } from '../api/openAi';
 import generateTitles from './generateTitles';
 import generateArticle from './generateArticle';
 import handleRedirect from './handleRedirect';
+import saveArticle from './saveArticle';
+import useEffectUnsplashQuery from './useEffectUnsplashQuery';
+import useEffectArticleResponse from './useEffectArticleResponse';
+
 
 // Environment variables
 const sanityProjectId = `${process.env.SANITY_STUDIO_PROJECT_ID}`;
@@ -16,16 +20,16 @@ const sanityDataset = `${process.env.SANITY_STUDIO_DATASET}`;
 const sanityToken = `${process.env.SANITY_STUDIO_WRITE_ACCESS}`;
 
 // Sanity Client
-const client = createClient({
+/*const client = createClient({
   projectId: `${process.env.SANITY_STUDIO_PROJECT_ID}`,
   dataset: `${process.env.SANITY_STUDIO_DATASET}`,
   apiVersion: new Date().toISOString().split('T')[0],
   token: `${process.env.SANITY_STUDIO_WRITE_ACCESS}`, 
   useCdn: false,
-});
+});*/
 
-/*// OpenAI API config
-const configuration = new Configuration({
+// OpenAI API config
+/*const configuration = new Configuration({
   organization: `${process.env.SANITY_STUDIO_OPENAI_ORG_ID}`,
   apiKey: `${process.env.SANITY_STUDIO_OPENAI_API_KEY}`,   
 });*/
@@ -166,7 +170,7 @@ const ChatGptPlugin = () => {
     });
   }*/
 
-  const handleSaveArticle = async () => {
+  /*const handleSaveArticle = async () => {
     setSavingArticle(true);  
     setSaveArticleError(false);
     
@@ -186,10 +190,13 @@ const ChatGptPlugin = () => {
       if (res !== undefined) setUnsplashQuery(res);
     })
     .catch(error => console.error(error));
+  }*/
+  const handleSaveArticle = async () => {
+    saveArticle(introduction, setSavingArticle, setSaveArticleError, setUnsplashQuery);
   }
 
   // State function for saving article after getting Unsplash keywords from ChatGPT
-  useEffect(() => {
+  /*useEffect(() => {
     if (unsplashQuery === '') return;
     let mutations;
 
@@ -282,7 +289,14 @@ const ChatGptPlugin = () => {
       });
 
     })();
-  }, [unsplashQuery]);
+  }, [unsplashQuery]);*/
+
+   // UseEffect hook for a successful article response from OpenAI API
+   useEffectArticleResponse(articleResponse, setTitle, setIntroduction, setBody, setShowTopic, setRadio, setLoadingArticle, setJsonError);
+
+   // UseEffect hook for saving article after getting Unsplash keywords from ChatGPT
+   useEffectUnsplashQuery(unsplashQuery, setTitle, setIntroduction, setBody, setUnsplashQuery, setSavingArticle, setPostSuccess, setSaveArticleError,
+      sanityProjectId, sanityDataset, sanityToken, title, introduction, body, literal.imgIdQuery);
 
    // Access and redirect to the last created article
    if (postSuccess){
@@ -290,7 +304,7 @@ const ChatGptPlugin = () => {
   }
 
   // UseEffect for a complete article response from OpenAI API
-  useEffect(() => {
+  /*useEffect(() => {
     if (articleResponse === '') return;
     setLoadingArticle(false);
 
@@ -317,7 +331,7 @@ const ChatGptPlugin = () => {
       setBody('');
     }
   }
-  , [articleResponse]);
+  , [articleResponse]);*/
 
   return (
   <Box id="container" sizing={'content'}>

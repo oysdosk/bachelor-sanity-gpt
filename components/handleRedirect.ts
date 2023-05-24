@@ -1,9 +1,11 @@
-import client from '../api/sanity';
+import clientInfo from '../api/sanity';
+import { createClient } from '@sanity/client';
 import * as literal from './literalConstants';
 
 const handleRedirect = async (setPostSuccess: (value: boolean) => void) => {
   setPostSuccess(false);
 
+  const client = createClient(clientInfo);
   client
     .fetch(literal.docIdQuery)
     .then(data => {

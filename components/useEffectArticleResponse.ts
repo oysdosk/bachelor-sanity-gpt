@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-const useArticleResponseEffect = (
+const useEffectArticleResponse = (
   articleResponse: string,
   setTitle: (value: string) => void,
   setIntroduction: (value: string) => void,
@@ -39,4 +39,4 @@ const useArticleResponseEffect = (
   }, [articleResponse, setTitle, setIntroduction, setBody, setShowTopic, setRadio, setLoadingArticle, setJsonError]);
 };
 
-export default useArticleResponseEffect;
+export default useEffectArticleResponse;
