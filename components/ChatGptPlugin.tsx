@@ -8,6 +8,7 @@ import Spinner from './spinner.jsx';
 import { configuration } from '../api/openAi';
 import generateTitles from './generateTitles';
 import generateArticle from './generateArticle';
+import handleRedirect from './handleRedirect';
 
 // Environment variables
 const sanityProjectId = `${process.env.SANITY_STUDIO_PROJECT_ID}`;
@@ -41,10 +42,10 @@ const ChatGptPlugin = () => {
   const [titles, setTitles] = useState(['', '', '','','']);
   const [articleResponse, setArticleResponse] = useState('');
   const [title, setTitle] = useState('');
-  const [ingress, setIngress] = useState('');
+  const [introduction, setIntroduction] = useState('');
   const [body, setBody] = useState('');
   const [unsplashQuery, setUnsplashQuery] = useState('');
-  const [transactionId, setTransactionId] = useState(null);
+  const [postSuccess, setPostSuccess] = useState(false);
   const [loadingTitle, setLoadingTitle] = useState(false);
   const [loadingArticle, setLoadingArticle] = useState(false);
   const [savingArticle, setSavingArticle] = useState(false);
@@ -136,7 +137,7 @@ const ChatGptPlugin = () => {
     setLoadingArticle(true);
     setJsonError(false);
     setOpenAiError(false);
-    setIngress('');
+    setIntroduction('');
     setBody('');
     setRadio('');
     //console.log(`literal.articleSystem${style}`)
@@ -172,7 +173,7 @@ const ChatGptPlugin = () => {
     // API prompt for Unsplash query
     openai.createChatCompletion({
       messages: [
-       {role: 'user', content: literal.unsplashPrompt(ingress)},
+       {role: 'user', content: literal.unsplashPrompt(introduction)},
        {role: 'assistant', content: literal.unsplashAssistant}
       ],
       model: 'gpt-3.5-turbo-0301',
@@ -210,7 +211,7 @@ const ChatGptPlugin = () => {
             _id: 'drafts.',
             _type: 'article',
             title: title,
-            ingress: ingress,
+            introduction: introduction,
             body: body,
             image: {
               _type: 'image',
@@ -234,7 +235,7 @@ const ChatGptPlugin = () => {
             _id: 'drafts.',
             _type: 'article',
             title: title,
-            ingress: ingress,
+            introduction: introduction,
             body: body,
           }
         }]
@@ -251,15 +252,11 @@ const ChatGptPlugin = () => {
       })
       .then(response => {
         setTitle('');
-        setIngress('');
+        setIntroduction('');
         setBody('');
         setUnsplashQuery('');
         setSavingArticle(false);
-        return response.json();
-      })
-      .then(result => {
-        setTransactionId(result.transactionId);
-        console.log('Transaction ID: ' + result.transactionId);
+        setPostSuccess(true);
       })
       .catch(error => {
         console.error(error);
@@ -287,20 +284,9 @@ const ChatGptPlugin = () => {
     })();
   }, [unsplashQuery]);
 
-  // Access and redirect to the last created article
-  if (transactionId !== null){
-    setTransactionId(null);
-
-    client.fetch(literal.docIdQuery)
-      .then(data => {
-        const articleId = data._id;
-        console.log('Article ID: ' + articleId);
-        console.log(`http://localhost:3333/desk/article;${articleId}`);
-        window.location.href = `http://localhost:3333/desk/article;${articleId}`;
-        //window.location.href = `https://sanity-oys-2.sanity.studio/desk/article;${articleId}`;
-
-      })
-    .catch(error => console.error(error));
+   // Access and redirect to the last created article
+   if (postSuccess){
+    handleRedirect(setPostSuccess);
   }
 
   // UseEffect for a complete article response from OpenAI API
@@ -313,13 +299,13 @@ const ChatGptPlugin = () => {
       setJsonError(false);
       let responseObject = JSON.parse(articleResponse);
       let title = responseObject.title;
-      let ingress = responseObject.ingress;
+      let introduction = responseObject.introduction;
 
       let paragraphs = responseObject.body.map((body: { paragraph: any; }) => body.paragraph);
       let body = paragraphs.join('\n\n');
     
       setTitle(title);
-      setIngress(ingress);
+      setIntroduction(introduction);
       setBody(body);
 
       setShowTopic(3);
@@ -327,7 +313,7 @@ const ChatGptPlugin = () => {
     catch (error) {
       console.error('Unable to parse JSON object.', error);
       setJsonError(true);
-      setIngress('');
+      setIntroduction('');
       setBody('');
     }
   }
@@ -577,7 +563,7 @@ const ChatGptPlugin = () => {
         {titleError && <h2>{literal.titleError}</h2>}
       </Card>
       <Card paddingBottom={4} paddingLeft={4}>
-        <Label size={4}>Ingress</Label>
+        <Label size={4}>introduction</Label>
       </Card>
       {loadingArticle ? (
         <Card paddingBottom={4} paddingLeft={4}>
@@ -585,15 +571,15 @@ const ChatGptPlugin = () => {
         </Card>
       ) : null}
       <Card paddingBottom={4} paddingLeft={4}>
-        <TextArea id="ingress"
+        <TextArea id="introduction"
           fontSize={[2, 2, 3, 3]}
           onChange={(event) =>
-            setIngress(event.currentTarget.value)
+            setIntroduction(event.currentTarget.value)
           }
           rows={5}
           padding={[3, 3, 4]}
           radius={3}
-          value={ingress}
+          value={introduction}
         />
       </Card>
       <Card paddingBottom={4} paddingLeft={4}>
