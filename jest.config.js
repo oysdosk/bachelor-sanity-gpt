@@ -5,6 +5,5 @@ module.exports = {
     '\\.tsx?$': 'babel-jest',
     '\\.jsx?$': 'babel-jest',
     '\\.mjs?$': 'babel-jest'
-  },
-  setupFilesAfterEnv: ['./jest.setup.js']
+  }
 };
