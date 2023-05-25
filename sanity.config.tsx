@@ -4,8 +4,7 @@ import {visionTool} from '@sanity/vision'
 import {schemaTypes} from './schemas'
 import { unsplashImageAsset } from "sanity-plugin-asset-source-unsplash";
 import {DashboardIcon} from '@sanity/icons'
-import ChatGptPlugin from './components/chatGPT/ChatGptPlugin'
-
+import ChatGptPlugin from './components/ChatGptPlugin'
 
 const chatGptTool = () => {
   return {

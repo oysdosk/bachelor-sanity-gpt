@@ -9,7 +9,7 @@ const override = `
 
 function Spinner() {
   return (
-    <div className="sweet-loading" margin={40}>
+    <div className="sweet-loading" style={{ margin: 40 }}>
       <BeatLoader color={"#123abc"} css={override} size={15} margin={4} />
     </div>
   );

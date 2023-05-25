@@ -28,8 +28,8 @@ export default defineType({
         ]
       }),
       defineField({
-        name: 'ingress',
-        title: 'Ingress',
+        name: 'introduction',
+        title: 'introduction',
         type: 'text',
       }),
       defineField({
