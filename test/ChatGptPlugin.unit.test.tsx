@@ -4,47 +4,6 @@ import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { ThemeProvider, studioTheme } from '@sanity/ui';
 import ChatGptPlugin from '../components/ChatGptPlugin';
-import { Configuration, OpenAIApi } from "openai";
-import { rest } from 'msw';
-import { setupServer } from 'msw/node';
-import * as literal from '../components/literalConstants';
-
-jest.mock('@sanity/client', () => ({
-  createClient: jest.fn().mockReturnValue({
-    fetch: jest.fn(),
-    delete: jest.fn(),
-  }),
-}));
-
-jest.mock('../unsplash/uploadUnsplashImage.mjs', () => jest.fn());
-
-/*const mockChatCompletion = jest.fn();
-jest.mock('openai', () => {
-  return {
-    OpenAIApi: jest.fn().mockImplementation(() => {
-      return {
-        createChatCompletion: jest.fn().mockResolvedValue({
-          data: {
-            choices: [
-              {
-                message: {
-                  content: {
-                    title1: 'Title 1',
-                    title2: 'Title 2',
-                    title3: 'Title 3',
-                    title4: 'Title 4',
-                    title5: 'Title 5',
-                  },
-                },
-              },
-            ],
-          },
-        }),
-      };
-    }),
-    Configuration: jest.fn(),
-  };
-});*/
 
 beforeEach(() => {
   render(
@@ -111,24 +70,6 @@ describe('TitlePage', () => {
     // Assert
     expect(loadingText.length).toBeGreaterThan(0);
   });
-
-  /*it('shows loading text when Generate Article button is clicked', async () => {
-    // Get a radio button and select it
-    const radio = screen.getByTestId('radio');
-    userEvent.click(radio);
-
-    // Wait for the state update and component re-render
-    const button = await waitFor(() => screen.getByTestId(/generate-article-2/i));
-  
-    // The button should now be enabled, so click it
-    userEvent.click(button);
-  
-    // Wait for the loading text to show up in the document
-    const loadingText = await screen.findAllByText('Loading article...');
-  
-    // Assert
-    expect(loadingText.length).toBeGreaterThan(0);
-  });*/
 })
 
 describe('DraftPage', () => {
@@ -160,5 +101,4 @@ describe('DraftPage', () => {
     // Assert
     expect(loadingText.length).toBeGreaterThan(0);
   });
-
 })
