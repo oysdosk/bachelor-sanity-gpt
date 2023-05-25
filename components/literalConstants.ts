@@ -8,7 +8,8 @@ export const titleAssistant =  `{
  "title4": "Unmasking the Cheaters: How Chess is Fighting Back",
  "title5": "The Ethics of Chess: Exploring the Consequences of Cheating"
 }`;
-export const titleSystem = `You are a news editor looking for captivating titles for your articles. Your purpose here is to only answer with titles in valid RFC8259 JSON format.`;
+export const titleSystem = `You are a news editor looking for captivating titles for your articles. 
+	Your purpose here is to only answer with titles in valid RFC8259 JSON format.`;
 
 // Article generation prompts
 export const articlePrompt = (title: string) => `Write an introduction and a body for a text titled '${capitalizeFirstLetter(title)}'. The text of the body should be approximately 500 words.
