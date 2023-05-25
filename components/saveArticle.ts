@@ -18,7 +18,7 @@ const saveArticle = async (
       {role: 'user', content: literal.unsplashPrompt(introduction)},
       {role: 'assistant', content: literal.unsplashAssistant}
     ],
-    model: 'gpt-3.5-turbo-0301',
+    model: 'gpt-3.5-turbo',
     temperature: 0.3,
     max_tokens: 16,
   })

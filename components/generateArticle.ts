@@ -24,7 +24,7 @@ const generateArticle = async (
       {role: 'system', content: `literal.articleSystem${style}`},
       {role: 'user', content: literal.articlePrompt(title)}
     ],
-    model: 'gpt-3.5-turbo-0301',
+    model: 'gpt-3.5-turbo',
     temperature: 0.8,
     max_tokens: 2048,
   })

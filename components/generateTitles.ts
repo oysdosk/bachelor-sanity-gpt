@@ -23,7 +23,7 @@ const generateTitles = async (inTopic: string,
       {role: 'user', content: literal.titlePrompt(inTopic)},
       {role: 'system', content: literal.titleSystem},
     ],
-    model: 'gpt-3.5-turbo-0301',
+    model: 'gpt-3.5-turbo',
     temperature: 0.9,
     max_tokens: 2048,
   })

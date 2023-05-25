@@ -1,4 +1,4 @@
-import { Configuration, OpenAIApi } from 'openai';
+import { Configuration } from 'openai';
 
 // OpenAI API config
 export const configuration = new Configuration({
