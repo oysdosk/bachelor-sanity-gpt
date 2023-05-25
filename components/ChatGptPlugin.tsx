@@ -59,7 +59,7 @@ const ChatGptPlugin = () => {
   useEffectUnsplashQuery(unsplashQuery, setTitle, setIntroduction, setBody, setUnsplashQuery, setSavingArticle, setPostSuccess, setSaveArticleError, 
     sanityProjectId, sanityDataset, sanityToken, title, introduction, body, literal.imgIdQuery);
     
-  // Access and redirect to the last created article
+  // Access and redirect to the last generated article
   if (postSuccess){
     handleRedirect(setPostSuccess);
   }
@@ -125,7 +125,7 @@ const ChatGptPlugin = () => {
           mode="ghost"
           padding={[3, 3, 4]}
           radius={3}
-          text="Create titles"
+          text="Generate titles"
           />
       </Card>
       {loadingTitle ? (
