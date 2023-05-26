@@ -34,10 +34,10 @@ const useEffectArticleResponse = (
     }
     // Unable to convert to JSON or map to `body` array
     catch (error) {
-      console.error('Unable to parse JSON object.', error);
       setJsonError(true);
       setIntroduction('');
       setBody('');
+      console.error('Unable to parse JSON object.', error);
     }
   }, [articleResponse, setTitle, setIntroduction, setBody, setShowTopic, setRadio, setLoadingArticle, setJsonError]);
 };

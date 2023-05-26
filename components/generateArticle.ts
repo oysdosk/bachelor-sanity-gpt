@@ -15,6 +15,7 @@ const generateArticle = async (
 
   setLoadingArticle(true);
   setJsonError(false);
+  setOpenAiError(false);
 
   // API prompt for article generation
   openai.createChatCompletion({

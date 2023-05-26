@@ -14,6 +14,7 @@ const generateTitles = async (inTopic: string,
     
   setLoadingTitle(true);
   setJsonError(false);
+  setOpenAiError(false);
 
   // API prompt for titles
   openai.createChatCompletion({
